@@ -23,6 +23,7 @@ import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.bootstrap.context.SpanRecorder;
 import com.navercorp.pinpoint.bootstrap.context.Trace;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
+import com.navercorp.pinpoint.bootstrap.context.TraceId;
 import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.RequestRecorderFactory;
@@ -33,6 +34,7 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.method.ServletSyncMethodD
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.ParameterRecorder;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.util.Assert;
+import com.navercorp.pinpoint.interaction.trace.export.TraceInfoExportHelper;
 
 /**
  * @author jaehong.kim
@@ -43,6 +45,8 @@ public class ServletRequestListenerInterceptorHelper<T> {
     private final PLogger logger = PLoggerFactory.getLogger(this.getClass());
     private final boolean isDebug = logger.isDebugEnabled();
     private final boolean isTrace = logger.isTraceEnabled();
+    private final boolean exportTraceInfo;
+    private static final String CONFIG_KEY_EXPORT_TRACE = "profiler.export.trace.info";
 
     private final TraceContext traceContext;
     private final ServiceType serviceType;
@@ -80,6 +84,7 @@ public class ServletRequestListenerInterceptorHelper<T> {
         this.httpStatusCodeRecorder = new HttpStatusCodeRecorder(traceContext.getProfilerConfig().getHttpStatusCodeErrors());
 
         this.traceContext.cacheApi(SERVLET_SYNC_METHOD_DESCRIPTOR);
+        this.exportTraceInfo = this.traceContext.getProfilerConfig().readBoolean(CONFIG_KEY_EXPORT_TRACE, false);
     }
 
     private <T> Filter<T> defaultFilter(Filter<T> excludeUrlFilter) {
@@ -107,6 +112,12 @@ public class ServletRequestListenerInterceptorHelper<T> {
             return;
         }
 
+        if (exportTraceInfo) {
+            TraceId traceId = trace.getTraceId();
+            if (traceId != null) {
+                TraceInfoExportHelper.exportTraceInfo(request, traceId.getTransactionId(), traceId.getSpanId());
+            }
+        }
         final SpanEventRecorder recorder = trace.traceBlockBegin();
         recorder.recordServiceType(serviceType);
         recorder.recordApi(methodDescriptor);
@@ -142,6 +153,11 @@ public class ServletRequestListenerInterceptorHelper<T> {
         final Trace trace = this.traceContext.currentRawTraceObject();
         if (trace == null) {
             return;
+        }
+
+        // clear trace info which is put in initialized method
+        if (exportTraceInfo) {
+            TraceInfoExportHelper.clearExportedTraceInfo(request);
         }
 
         // TODO STATDISABLE this logic was added to disable statistics tracing
