@@ -20,6 +20,7 @@ import com.navercorp.pinpoint.common.Version;
 import com.navercorp.pinpoint.common.util.ArrayUtils;
 import com.navercorp.pinpoint.common.util.SystemProperty;
 import com.navercorp.pinpoint.exception.PinpointException;
+import com.navercorp.pinpoint.test.plugin.util.StringUtils;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.internal.runners.statements.RunAfters;
@@ -32,6 +33,7 @@ import org.junit.runners.model.Statement;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -60,6 +62,9 @@ public abstract class AbstractPinpointPluginTestSuite extends Suite {
             "pinpoint-test",
             "/test/target/classes" // pinpoint-test build output directory
     };
+
+    private static final String FILE_URL_PREFIX = "file:";
+    private static final String JAVA_9_INTERNAL_CLASSLOADER_PREFIX = "jdk.internal.loader.ClassLoaders$";
 
     private final List<String> requiredLibraries;
     private final List<String> mavenDependencyLibraries;
@@ -157,10 +162,33 @@ public abstract class AbstractPinpointPluginTestSuite extends Suite {
 
 
     private List<String> getClassPathList(String[] classPathCandidates) {
-        List<String> result = new ArrayList<String>();
-
         ClassLoader cl = getClass().getClassLoader();
+        if (cl.getClass().getName().startsWith(JAVA_9_INTERNAL_CLASSLOADER_PREFIX)) {
+            return getJava9ClassPathList(classPathCandidates);
+        }
+        return getClassPathList(cl, classPathCandidates);
+    }
 
+    private List<String> getJava9ClassPathList(String[] classPathCandidates) {
+        String classPath = SystemProperty.INSTANCE.getProperty("java.class.path");
+        if (StringUtils.isEmpty(classPath)) {
+            return new ArrayList<String>();
+        }
+        String[] paths = classPath.split(":");
+        URL[] urls = new URL[paths.length];
+        for (int i = 0; i < paths.length; i++) {
+            try {
+                urls[i] = new URL(FILE_URL_PREFIX + paths[i]);
+            } catch (MalformedURLException e) {
+                System.out.println("Skip - " + paths[i] + " check url format");
+            }
+        }
+        Collection<String> requiredLibraries = findLibraries(urls, classPathCandidates);
+        return new ArrayList<String>(requiredLibraries);
+    }
+
+    private List<String> getClassPathList(ClassLoader cl, String[] classPathCandidates) {
+        List<String> result = new ArrayList<String>();
         while (true) {
             if (cl instanceof URLClassLoader) {
                 URLClassLoader ucl = ((URLClassLoader) cl);
@@ -174,7 +202,6 @@ public abstract class AbstractPinpointPluginTestSuite extends Suite {
                 break;
             }
         }
-
         return result;
     }
 
