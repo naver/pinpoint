@@ -26,6 +26,7 @@ import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.CompareFilter;
 
 import java.util.Collections;
 import java.util.List;
@@ -158,6 +159,30 @@ public class AsyncPutHbaseTemplate2 implements HbaseOperations2 {
     @Override
     public void put(TableName tableName, List<Put> puts) {
         delegate.put(tableName, puts);
+    }
+
+    /**
+     * Atomically checks if a row/family/qualifier value matches the expected
+     * value. If it does, it adds the put.  If the passed value is null, the check
+     * is for the lack of column (ie: non-existance)
+     *
+     * @param tableName  target table
+     * @param rowName    to check
+     * @param familyName column family to check
+     * @param qualifier  column qualifier to check
+     * @param compareOp  comparison operator to use
+     * @param value      the expected value
+     * @param put        data to put if check succeeds
+     * @return true if the new put was executed, false otherwise
+     */
+    @Override
+    public boolean checkAndPut(TableName tableName, byte[] rowName, byte[] familyName, byte[] qualifier, CompareFilter.CompareOp compareOp, byte[] value, Put put) {
+        return delegate.checkAndPut(tableName, rowName, familyName, qualifier, compareOp, value, put);
+    }
+
+    @Override
+    public void maxColumnValue(TableName tableName, byte[] rowName, byte[] familyName, byte[] qualifier, long value) {
+        delegate.maxColumnValue(tableName, rowName, familyName, qualifier, value);
     }
 
     @Override

@@ -36,6 +36,8 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -311,6 +313,45 @@ public class HbaseTemplate2 extends HbaseAccessor implements HbaseOperations2, I
                 return null;
             }
         });
+    }
+
+    /**
+     * Atomically checks if a row/family/qualifier value matches the expected
+     * value. If it does, it adds the put.  If the passed value is null, the check
+     * is for the lack of column (ie: non-existence)
+     *
+     * @param tableName  target table
+     * @param rowName       to check
+     * @param familyName    column family to check
+     * @param qualifier column qualifier to check
+     * @param compareOp comparison operator to use
+     * @param value     the expected value
+     * @param put       data to put if check succeeds
+     * @return true if the new put was executed, false otherwise
+     */
+    @Override
+    public boolean checkAndPut(TableName tableName, byte[] rowName, byte[] familyName, byte[] qualifier, CompareFilter.CompareOp compareOp, byte[] value, Put put) {
+        return (boolean) execute(tableName, new TableCallback() {
+            @Override
+            public Object doInTable(Table table) throws Throwable {
+                try {
+                    return table.checkAndPut(rowName, familyName, qualifier, compareOp, value, put);
+                } catch (IOException e) {
+                    return Boolean.FALSE;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void maxColumnValue(TableName tableName, byte[] rowName, byte[] familyName, byte[] qualifier, long value) {
+        byte[] valBytes = Bytes.toBytes(value);
+        Put put = new Put(rowName);
+        put.addColumn(familyName, qualifier, valBytes);
+        //check for existence and put for the first time
+        checkAndPut(tableName, rowName, familyName, qualifier, CompareFilter.CompareOp.EQUAL, null, put);
+        //check for max and put for update
+        checkAndPut(tableName, rowName, familyName, qualifier, CompareFilter.CompareOp.GREATER_OR_EQUAL, valBytes, put);
     }
 
     @Override

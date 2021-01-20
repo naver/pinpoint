@@ -12,7 +12,11 @@
                 <div [hidden]="isTargetMerged$ | async">
                     <pp-response-summary-chart-container [sourceType]="'MAIN'"></pp-response-summary-chart-container>
                     <hr/>
+                    <pp-response-avg-max-chart-container [sourceType]="'MAIN'"></pp-response-avg-max-chart-container>
+                    <hr/>
                     <pp-load-chart-container [sourceType]="'MAIN'"></pp-load-chart-container>
+                    <hr/>
+                    <pp-load-avg-max-chart-container [sourceType]="'MAIN'"></pp-load-avg-max-chart-container>
                 </div>
             </div>
         </div>

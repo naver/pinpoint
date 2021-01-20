@@ -28,6 +28,14 @@ interface IResponseTime {
     'Error': number;
     [key: string]: number;
 }
+
+interface IResponseStatistics {
+    'Avg': number;
+    'Max': number;
+    'Sum': number;
+    'Tot': number;
+}
+
 // @store
 interface IHistogram {
     key: string;
@@ -85,10 +93,11 @@ interface IAgent {
     vmVersion: string;
 }
 // @store
-interface IAgentSelection { 
+interface IAgentSelection {
     agent: string;
     responseSummary: IResponseTime | IResponseMilliSecondTime;
     load: IHistogram[];
+    responseStatistics: IResponseStatistics;
 }
 interface IInstanceInfo {
     hasInspector: boolean;
@@ -111,12 +120,15 @@ interface ILinkInfo {
     fromAgent?: string[];
     hasAlert: boolean;
     histogram: IResponseTime | IResponseMilliSecondTime;
+    responseStatistics: IResponseStatistics;
     key: string;
     slowCount: number;
     sourceHistogram?: { [key: string]: IResponseTime | IResponseMilliSecondTime };
+    sourceResponseStatistics?: { [key: string]: IResponseStatistics };
     sourceInfo: ISourceInfo;
     sourceTimeSeriesHistogram?: { [key: string]: IHistogram }[];
     targetHistogram?: { [key: string]: IResponseTime | IResponseMilliSecondTime };
+    targetResponseStatistics?: { [key: string]: IResponseStatistics };
     targetInfo: ISourceInfo;
     timeSeriesHistogram: IHistogram[];
     to: string;
@@ -124,14 +136,16 @@ interface ILinkInfo {
     totalCount: number;
 }
 interface INodeInfo {
-    agentHistogram?: { [key:string]: IResponseTime | IResponseMilliSecondTime }[];
-    agentTimeSeriesHistogram?: { [key:string]: IHistogram[] };
+    agentHistogram?: { [key: string]: IResponseTime | IResponseMilliSecondTime }[];
+    agentTimeSeriesHistogram?: { [key: string]: IHistogram[] };
     agentIds: string[];
     applicationName: string;
     category: string;
     errorCount: number;
     hasAlert: boolean;
     histogram: IResponseTime | IResponseMilliSecondTime;
+    responseStatistics: IResponseStatistics;
+    agentResponseStatistics?: { [key: string]: IResponseStatistics};
     instanceCount: number;
     instanceErrorCount: number;
     isAuthorized: boolean;

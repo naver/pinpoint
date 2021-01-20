@@ -86,11 +86,12 @@ export class InfoPerServerForFilteredMapContainerComponent implements OnInit, On
             filter(() => this.selectedTarget && this.selectedTarget.isNode),
             filter((visibleState: boolean) => visibleState ? true : (this.hide(), this.cd.detectChanges(), false)),
             map(() => this.serverMapData.getNodeData(this.selectedTarget.node[0])),
-            tap(({serverList, agentHistogram, agentTimeSeriesHistogram, isWas}: INodeInfo | IShortNodeInfo) => {
+            tap(({serverList, agentHistogram, agentTimeSeriesHistogram, agentResponseStatistics, isWas}: INodeInfo | IShortNodeInfo) => {
                 this.agentHistogramData = {
                     serverList,
                     agentHistogram,
                     agentTimeSeriesHistogram,
+                    agentResponseStatistics,
                     isWas
                 };
             })
@@ -100,7 +101,8 @@ export class InfoPerServerForFilteredMapContainerComponent implements OnInit, On
             this.storeHelperService.dispatch(new Actions.ChangeAgentForServerList({
                 agent: this.selectedAgent,
                 responseSummary: this.agentHistogramData['agentHistogram'][this.selectedAgent],
-                load: this.agentHistogramData['agentTimeSeriesHistogram'][this.selectedAgent]
+                load: this.agentHistogramData['agentTimeSeriesHistogram'][this.selectedAgent],
+                responseStatistics: this.agentHistogramData['agentResponseStatistics'][this.selectedAgent]
             }));
             this.cd.detectChanges();
         });
@@ -131,7 +133,8 @@ export class InfoPerServerForFilteredMapContainerComponent implements OnInit, On
         this.storeHelperService.dispatch(new Actions.ChangeAgentForServerList({
             agent,
             responseSummary: this.agentHistogramData['agentHistogram'][agent],
-            load: this.agentHistogramData['agentTimeSeriesHistogram'][agent]
+            load: this.agentHistogramData['agentTimeSeriesHistogram'][agent],
+            responseStatistics: this.agentHistogramData['agentResponseStatistics'][agent]
         }));
         this.selectedAgent = agent;
     }

@@ -21,11 +21,13 @@ import com.navercorp.pinpoint.collector.dao.hbase.statistics.BulkIncrementer;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.CallRowKey;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.ColumnName;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.ResponseColumnName;
+import com.navercorp.pinpoint.collector.dao.hbase.statistics.RowInfo;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.RowKey;
 import com.navercorp.pinpoint.common.hbase.HbaseColumnFamily;
 import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
 import com.navercorp.pinpoint.common.hbase.TableDescriptor;
 import com.navercorp.pinpoint.common.server.util.AcceptedTimeService;
+import com.navercorp.pinpoint.common.trace.HistogramSchema;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.profiler.util.ApplicationMapStatisticsUtils;
 import com.navercorp.pinpoint.common.server.util.TimeSlot;
@@ -110,14 +112,23 @@ public class HbaseMapResponseTimeDao implements MapResponseTimeDao {
 
         final short slotNumber = ApplicationMapStatisticsUtils.getSlotNumber(applicationServiceType, elapsed, isError);
         final ColumnName selfColumnName = new ResponseColumnName(agentId, slotNumber);
+
+        HistogramSchema histogramSchema = applicationServiceType.getHistogramSchema();
+        final ColumnName sumColumnName = new ResponseColumnName(agentId, histogramSchema.getSumStatSlot().getSlotTime());
+        final ColumnName maxColumnName = new ResponseColumnName(agentId, histogramSchema.getMaxStatSlot().getSlotTime());
+
         if (useBulk) {
             TableName mapStatisticsSelfTableName = descriptor.getTableName();
             bulkIncrementer.increment(mapStatisticsSelfTableName, selfRowKey, selfColumnName);
+            bulkIncrementer.increment(mapStatisticsSelfTableName, selfRowKey, sumColumnName, elapsed);
+            bulkIncrementer.updateMax(mapStatisticsSelfTableName, selfRowKey, maxColumnName, elapsed);
         } else {
             final byte[] rowKey = getDistributedKey(selfRowKey.getRowKey());
             // column name is the name of caller app.
             byte[] columnName = selfColumnName.getColumnName();
             increment(rowKey, columnName, 1L);
+            increment(rowKey, sumColumnName.getColumnName(), elapsed);
+            checkAndMax(rowKey, maxColumnName.getColumnName(), elapsed);
         }
     }
 
@@ -127,6 +138,13 @@ public class HbaseMapResponseTimeDao implements MapResponseTimeDao {
 
         TableName mapStatisticsSelfTableName = descriptor.getTableName();
         hbaseTemplate.incrementColumnValue(mapStatisticsSelfTableName, rowKey, descriptor.getColumnFamilyName(), columnName, increment);
+    }
+
+    private void checkAndMax(byte[] rowKey, byte[] columnName, long val) {
+        Objects.requireNonNull(rowKey, "rowKey");
+        Objects.requireNonNull(columnName, "columnName");
+
+        hbaseTemplate.maxColumnValue(descriptor.getTableName(), rowKey, descriptor.getColumnFamilyName(), columnName, val);
     }
 
 
@@ -144,6 +162,13 @@ public class HbaseMapResponseTimeDao implements MapResponseTimeDao {
                 logger.debug("flush {} to [{}] Increment:{}", this.getClass().getSimpleName(), tableName.getNameAsString(), increments.size());
             }
             hbaseTemplate.increment(tableName, increments);
+        }
+
+        Map<RowInfo, Long> maxUpdateMap = bulkIncrementer.getMaxUpdate();
+        for (RowInfo rowInfo : maxUpdateMap.keySet()) {
+            Long val = maxUpdateMap.get(rowInfo);
+            final byte[] rowKey = getDistributedKey(rowInfo.getRowKey().getRowKey());
+            checkAndMax(rowKey, rowInfo.getColumnName().getColumnName(), val);
         }
     }
 

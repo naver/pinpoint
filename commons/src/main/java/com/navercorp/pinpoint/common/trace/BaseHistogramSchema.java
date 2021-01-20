@@ -19,6 +19,8 @@ public class BaseHistogramSchema implements HistogramSchema {
 
     private static final short VERY_SLOW_SLOT_TIME = 0;
     private static final short ERROR_SLOT_TIME = -1;
+    private static final short STAT_SLOT_TIME_TOTAL = Short.MIN_VALUE + 1;
+    private static final short STAT_SLOT_TIME_MAX = Short.MIN_VALUE + 2;
 
     private final int typeCode;
 
@@ -32,6 +34,8 @@ public class BaseHistogramSchema implements HistogramSchema {
     private final HistogramSlot normalErrorSlot;
     private final HistogramSlot slowErrorSlot;
     private final HistogramSlot verySlowErrorSlot;
+    private final HistogramSlot sumStatSlot;
+    private final HistogramSlot maxStatSlot;
 
     private BaseHistogramSchema(int typeCode, short fast, String fastName, short normal, String normalName, short slow, String slowName, String verySlowName, String errorName, short fastError, String fastErrorName, short normalError, String normalErrorName, short slowError, String slowErrorName, short verySlowError, String verySlowErrorName) {
         this.typeCode = typeCode;
@@ -45,6 +49,8 @@ public class BaseHistogramSchema implements HistogramSchema {
         this.slowErrorSlot = new HistogramSlot(slowError, SlotType.SLOW_ERROR, slowErrorName);
         this.verySlowSlot = new HistogramSlot(VERY_SLOW_SLOT_TIME, SlotType.VERY_SLOW, verySlowName);
         this.verySlowErrorSlot = new HistogramSlot(verySlowError, SlotType.VERY_SLOW_ERROR, verySlowErrorName);
+        this.sumStatSlot = new HistogramSlot(STAT_SLOT_TIME_TOTAL, SlotType.SUM_STAT, "SumTime");
+        this.maxStatSlot = new HistogramSlot(STAT_SLOT_TIME_MAX, SlotType.MAX_STAT, "Max");
     }
 
     public int getTypeCode() {
@@ -98,6 +104,16 @@ public class BaseHistogramSchema implements HistogramSchema {
 
     public HistogramSlot getVerySlowErrorSlot() {
         return verySlowErrorSlot;
+    }
+
+    @Override
+    public HistogramSlot getSumStatSlot() {
+        return sumStatSlot;
+    }
+
+    @Override
+    public HistogramSlot getMaxStatSlot() {
+        return maxStatSlot;
     }
 
     @Override

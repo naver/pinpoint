@@ -56,20 +56,27 @@ public class AtomicLongMapTest {
     }
 
     @Test
-    public void testIntegerMax() throws Exception {
+    public void updateMax_update() throws Exception {
         AtomicLongMap<String> cache = AtomicLongMap.create();
-        cache.addAndGet("a", 1L);
-        cache.addAndGet("a", 2L);
-        cache.addAndGet("b", 5L);
+
+        final String key = "a";
+
+        cache.put(key, 10);
+        long updated = cache.accumulateAndGet(key, 12, Long::max);
+
+        Assert.assertEquals(12, updated);
     }
 
     @Test
-    public void testIntegerMin() throws Exception {
+    public void updateMax_fail() throws Exception {
         AtomicLongMap<String> cache = AtomicLongMap.create();
-        cache.addAndGet("a", 1L);
-        cache.addAndGet("a", 2L);
-        cache.addAndGet("b", 5L);
 
+        final String key = "a";
+
+        cache.put(key, 10);
+        long updated = cache.accumulateAndGet(key, 9, Long::max);
+
+        Assert.assertEquals(10, updated);
     }
 
     //    @Test

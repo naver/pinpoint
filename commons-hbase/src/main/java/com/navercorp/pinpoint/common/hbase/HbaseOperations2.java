@@ -24,6 +24,7 @@ import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.CompareFilter;
 
 import java.util.List;
 
@@ -77,6 +78,32 @@ public interface HbaseOperations2 {
     <T> void put(TableName tableName, final byte[] rowName, final byte[] familyName, final byte[] qualifier, final Long timestamp, final T value, final ValueMapper<T> mapper);
     void put(TableName tableName, final Put put);
     void put(TableName tableName, final List<Put> puts);
+
+    /**
+     * Atomically checks if a row/family/qualifier value matches the expected
+     * value. If it does, it adds the put.  If the passed value is null, the check
+     * is for the lack of column (ie: non-existance)
+     *
+     * @param tableName  target table
+     * @param rowName to check
+     * @param familyName column family to check
+     * @param qualifier column qualifier to check
+     * @param compareOp comparison operator to use
+     * @param value the expected value
+     * @param put data to put if check succeeds
+     * @return true if the new put was executed, false otherwise
+     */
+    boolean checkAndPut(TableName tableName, byte[] rowName, byte[] familyName, byte[] qualifier, CompareFilter.CompareOp compareOp, byte[] value, Put put);
+
+    /**
+     *
+     * @param tableName  target table
+     * @param rowName to check
+     * @param familyName column family to check
+     * @param qualifier column qualifier to check
+     * @param value if the value provided is greater than the saved, update the saved
+     */
+    void maxColumnValue(TableName tableName, final byte[] rowName, final byte[] familyName, final byte[] qualifier, final long value);
 
     /**
      * If asyncOperation is not set, then execute put method instead of asyncPut method.

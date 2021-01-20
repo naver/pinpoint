@@ -1,0 +1,33 @@
+:host {
+    display: block;
+}
+
+.l-chart-item {
+    height: 202px;
+}
+
+.l-tool-box {
+    padding: 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 36px;
+}
+
+.l-tool-box .l-title {
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+}
+
+.l-tool-box button {
+    font-size: 18px;
+    color: #b3b5b9;
+    margin: 0;
+}
+
+.l-content-section {
+    position: relative;
+    padding: 0 25px;
+    height: calc(100% - 36px);
+}

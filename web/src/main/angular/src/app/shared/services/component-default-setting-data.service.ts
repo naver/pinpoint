@@ -50,6 +50,10 @@ export class ComponentDefaultSettingDataService {
         'rgba(230, 127, 34, 0.5)',  // #e67f22
         'rgba(233, 84, 89, 0.5)'    // #e95459
     ];
+    private colorByResponseStatistics: string[] = [
+        'rgb(151,227,134)',    // #97E386
+        'rgb(19,182,231)'    // #13B6E7
+    ];
     private dateFormatList = [
         // [default, default + timezone, default + millisecond, time+millisecond, year+month+day, time, variation1, variation2]
         ['YYYY.MM.DD HH:mm:ss', 'YYYY.MM.DD HH:mm:ss Z', 'YYYY.MM.DD HH:mm:ss SSS', 'HH:mm:ss SSS', 'YYYY.MM.DD', 'HH:mm:ss', 'MM.DD', 'HH:mm'],
@@ -119,6 +123,9 @@ export class ComponentDefaultSettingDataService {
     }
     getColorByRequest(): string[] {
         return this.colorByRequest;
+    }
+    getColorByResponseStatistics(): string[] {
+        return this.colorByResponseStatistics;
     }
     getDateFormatList(): string[][] {
         return this.dateFormatList;

@@ -98,6 +98,17 @@ public class NodeHistogram {
         return agentHistogramMap;
     }
 
+    public Map<String, ResponseTimeStatics> getAgentResponseStatisticsMap() {
+        if (agentHistogramMap == null) {
+            return null;
+        }
+        Map<String, ResponseTimeStatics> map = new HashMap<>(agentHistogramMap.size());
+        agentHistogramMap.forEach((agentId, histogram) -> {
+            map.put(agentId, ResponseTimeStatics.fromHistogram(histogram));
+        });
+        return map;
+    }
+
     public List<ResponseTimeViewModel> getApplicationTimeHistogram() {
         return applicationTimeHistogram.createViewModel();
     }

@@ -24,6 +24,7 @@ import com.navercorp.pinpoint.web.applicationmap.histogram.Histogram;
 import com.navercorp.pinpoint.web.applicationmap.histogram.NodeHistogram;
 import com.navercorp.pinpoint.web.applicationmap.nodes.NodeHistogramSummary;
 import com.navercorp.pinpoint.web.applicationmap.nodes.ServerInstanceList;
+import com.navercorp.pinpoint.web.vo.ResponseTimeStatics;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,6 +51,8 @@ public class NodeHistogramSummarySerializer extends JsonSerializer<NodeHistogram
 
     private void writeHistogram(JsonGenerator jgen, NodeHistogram nodeHistogram) throws IOException {
         Histogram applicationHistogram = nodeHistogram.getApplicationHistogram();
+        ResponseTimeStatics responseTimeStatics = ResponseTimeStatics.fromHistogram(applicationHistogram);
+        jgen.writeObjectField(ResponseTimeStatics.RESPONSE_STATISTICS, responseTimeStatics);
         if (applicationHistogram == null) {
             writeEmptyObject(jgen, "histogram");
         } else {
@@ -58,8 +61,10 @@ public class NodeHistogramSummarySerializer extends JsonSerializer<NodeHistogram
         Map<String, Histogram> agentHistogramMap = nodeHistogram.getAgentHistogramMap();
         if(agentHistogramMap == null) {
             writeEmptyObject(jgen, "agentHistogram");
+            writeEmptyObject(jgen, ResponseTimeStatics.AGENT_RESPONSE_STATISTICS);
         } else {
             jgen.writeObjectField("agentHistogram", agentHistogramMap);
+            jgen.writeObjectField(ResponseTimeStatics.AGENT_RESPONSE_STATISTICS, nodeHistogram.getAgentResponseStatisticsMap());
         }
 
         List<ResponseTimeViewModel> applicationTimeSeriesHistogram = nodeHistogram.getApplicationTimeHistogram();

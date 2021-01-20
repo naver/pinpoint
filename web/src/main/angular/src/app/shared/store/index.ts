@@ -68,8 +68,10 @@ export const STORE_KEY = {
     APPLICATION_INSPECTOR_CHART_LAYOUT: 'applicationInspectorChartLayout',
     AGENT_INSPECTOR_CHART_LAYOUT: 'agentInspectorChartLayout',
     TRANSACTION_VIEW_TYPE: 'transactionViewType',
+    RESPONSE_AVG_MAX_CHART_Y_MAX: 'responseAvgMaxChartYMax',
     RESPONSE_SUMMARY_CHART_Y_MAX: 'responseSummaryChartYMax',
     LOAD_CHART_Y_MAX: 'loadChartYMax',
+    LOAD_AVG_MAX_CHART_Y_MAX: 'loadAvgMaxChartYMax',
     LANGUAGE: 'language',
 };
 
@@ -97,7 +99,9 @@ export const reducers: ActionReducerMap<any> = {
     agentInspectorChartLayout: chartLayout.AgentInspectorChartLayoutReducer,
     transactionViewType: transactionViewType.Reducer,
     responseSummaryChartYMax: chartYMax.ResponseSummaryChartYMaxReducer,
+    responseAvgMaxChartYMax: chartYMax.ResponseAvgMaxChartYMaxReducer,
     loadChartYMax: chartYMax.LoadChartYMaxReducer,
+    loadAvgMaxChartYMax: chartYMax.LoadAvgMaxChartYMaxReducer,
     language: language.Reducer
 };
 
@@ -124,7 +128,9 @@ export const Actions = {
     'UpdateAgentInspectorChartLayout': chartLayout.UpdateAgentInspectorChartLayoutInfo,
     'ChangeTransactionViewType': transactionViewType.ChangeTransactionViewType,
     'UpdateResponseSummaryChartYMax': chartYMax.UpdateResponseSummaryChartYMax,
+    'UpdateResponseAvgMaxChartYMax': chartYMax.UpdateResponseAvgMaxChartYMax,
     'UpdateLoadChartYMax': chartYMax.UpdateLoadChartYMax,
+    'UpdateLoadAvgMaxChartYMax': chartYMax.UpdateLoadAvgMaxChartYMax,
     'ChangeLanguage': language.ChangeLanguage
 };
 

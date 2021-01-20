@@ -67,6 +67,53 @@ public class BulkIncrementerTest {
     }
 
     @Test
+    public void maxUpdate() {
+        // Given
+        TableName tableA = TableName.valueOf("A");
+        RowKey rowKey= new TestRowKey(0);
+        ColumnName columnName = new TestColumnName(1);
+
+
+        bulkIncrementer.updateMax(tableA, rowKey, columnName, 10);
+        Map<RowInfo, Long> maxUpdate = bulkIncrementer.getMaxUpdate();
+        long max = maxUpdate.get(new DefaultRowInfo(tableA, rowKey, columnName));
+
+        Assert.assertEquals("max", 10L, max);
+    }
+
+    @Test
+    public void maxUpdate_max() {
+        // Given
+        TableName tableA = TableName.valueOf("A");
+        RowKey rowKey= new TestRowKey(0);
+        ColumnName columnName = new TestColumnName(1);
+
+
+        bulkIncrementer.updateMax(tableA, rowKey, columnName, 10);
+        bulkIncrementer.updateMax(tableA, rowKey, columnName, 20);
+        Map<RowInfo, Long> maxUpdate = bulkIncrementer.getMaxUpdate();
+        long max = maxUpdate.get(new DefaultRowInfo(tableA, rowKey, columnName));
+
+        Assert.assertEquals("max", 20L, max);
+    }
+
+    @Test
+    public void maxUpdate_fail() {
+        // Given
+        TableName tableA = TableName.valueOf("A");
+        RowKey rowKey= new TestRowKey(0);
+        ColumnName columnName = new TestColumnName(1);
+
+
+        bulkIncrementer.updateMax(tableA, rowKey, columnName, 10);
+        bulkIncrementer.updateMax(tableA, rowKey, columnName, 0);
+        Map<RowInfo, Long> maxUpdate = bulkIncrementer.getMaxUpdate();
+        long max = maxUpdate.get(new DefaultRowInfo(tableA, rowKey, columnName));
+
+        Assert.assertEquals("max", 10L, max);
+    }
+
+    @Test
     public void singleTable() {
         // Given
         TableName tableA = TableName.valueOf("A");

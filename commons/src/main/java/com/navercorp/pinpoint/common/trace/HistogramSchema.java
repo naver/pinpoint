@@ -48,4 +48,9 @@ public interface HistogramSchema {
     HistogramSlot getSlowErrorSlot();
 
     HistogramSlot getVerySlowErrorSlot();
+
+    HistogramSlot getSumStatSlot();
+
+    HistogramSlot getMaxStatSlot();
+
 }

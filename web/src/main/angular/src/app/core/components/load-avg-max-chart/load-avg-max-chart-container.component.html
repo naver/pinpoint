@@ -1,0 +1,14 @@
+<article class="l-chart-item">
+    <div class="l-tool-box">
+        <p class="l-title">Load Avg & Max</p>
+    </div>
+    <div class="l-content-section">
+        <pp-loading [showLoading]="showLoading" [zIndex]="10"></pp-loading>
+        <pp-retry [showRetry]="showRetry" [message]="dataFetchFailedText" (outRetry)="onRetry()"></pp-retry>
+        <pp-load-avg-max-chart
+            [ngClass]="chartVisibility"
+            [chartConfig]="chartConfig"
+            (outRendered)="onRendered()">
+        </pp-load-avg-max-chart>
+    </div>
+</article>

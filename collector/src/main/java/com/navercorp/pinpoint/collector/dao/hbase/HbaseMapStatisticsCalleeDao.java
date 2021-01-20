@@ -21,11 +21,13 @@ import com.navercorp.pinpoint.collector.dao.hbase.statistics.BulkIncrementer;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.CallRowKey;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.CallerColumnName;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.ColumnName;
+import com.navercorp.pinpoint.collector.dao.hbase.statistics.RowInfo;
 import com.navercorp.pinpoint.collector.dao.hbase.statistics.RowKey;
 import com.navercorp.pinpoint.common.hbase.HbaseColumnFamily;
 import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
 import com.navercorp.pinpoint.common.hbase.TableDescriptor;
 import com.navercorp.pinpoint.common.server.util.AcceptedTimeService;
+import com.navercorp.pinpoint.common.trace.HistogramSchema;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.profiler.util.ApplicationMapStatisticsUtils;
 import com.navercorp.pinpoint.common.server.util.TimeSlot;
@@ -115,15 +117,23 @@ public class HbaseMapStatisticsCalleeDao implements MapStatisticsCalleeDao {
         final short callerSlotNumber = ApplicationMapStatisticsUtils.getSlotNumber(calleeServiceType, elapsed, isError);
         final ColumnName callerColumnName = new CallerColumnName(callerServiceType.getCode(), callerApplicationName, callerHost, callerSlotNumber);
 
+        HistogramSchema histogramSchema = calleeServiceType.getHistogramSchema();
+        final ColumnName sumColumnName = new CallerColumnName(callerServiceType.getCode(), callerApplicationName, callerHost, histogramSchema.getSumStatSlot().getSlotTime());
+        final ColumnName maxColumnName = new CallerColumnName(callerServiceType.getCode(), callerApplicationName, callerHost, histogramSchema.getMaxStatSlot().getSlotTime());
+
         if (useBulk) {
-            TableName mapStatisticsCallerTableName = descriptor.getTableName();
-            bulkIncrementer.increment(mapStatisticsCallerTableName, calleeRowKey, callerColumnName);
+            TableName tableName = descriptor.getTableName();
+            bulkIncrementer.increment(tableName, calleeRowKey, callerColumnName);
+            bulkIncrementer.increment(tableName, calleeRowKey, sumColumnName, elapsed);
+            bulkIncrementer.updateMax(tableName, calleeRowKey, maxColumnName, elapsed);
         } else {
             final byte[] rowKey = getDistributedKey(calleeRowKey.getRowKey());
 
             // column name is the name of caller app.
             byte[] columnName = callerColumnName.getColumnName();
             increment(rowKey, columnName, 1L);
+            increment(rowKey, sumColumnName.getColumnName(), elapsed);
+            checkAndMax(rowKey, maxColumnName.getColumnName(), elapsed);
         }
     }
 
@@ -133,6 +143,13 @@ public class HbaseMapStatisticsCalleeDao implements MapStatisticsCalleeDao {
 
         TableName mapStatisticsCallerTableName = descriptor.getTableName();
         hbaseTemplate.incrementColumnValue(mapStatisticsCallerTableName, rowKey, descriptor.getColumnFamilyName(), columnName, increment);
+    }
+
+    private void checkAndMax(byte[] rowKey, byte[] columnName, long value) {
+        Objects.requireNonNull(rowKey, "rowKey");
+        Objects.requireNonNull(columnName, "columnName");
+
+        hbaseTemplate.maxColumnValue(descriptor.getTableName(), rowKey, descriptor.getColumnFamilyName(), columnName, value);
     }
 
     @Override
@@ -152,6 +169,12 @@ public class HbaseMapStatisticsCalleeDao implements MapStatisticsCalleeDao {
             hbaseTemplate.increment(tableName, increments);
         }
 
+        Map<RowInfo, Long> maxUpdateMap = bulkIncrementer.getMaxUpdate();
+        for (RowInfo rowInfo : maxUpdateMap.keySet()) {
+            Long val = maxUpdateMap.get(rowInfo);
+            final byte[] rowKey = getDistributedKey(rowInfo.getRowKey().getRowKey());
+            checkAndMax(rowKey, rowInfo.getColumnName().getColumnName(), val);
+        }
     }
 
     private byte[] getDistributedKey(byte[] rowKey) {

@@ -1,35 +1,24 @@
 import { Component, OnInit, OnDestroy, Input, ComponentFactoryResolver, Injector, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subject, forkJoin, merge, of } from 'rxjs';
-import { filter, map, tap, switchMap, catchError, pluck, withLatestFrom, takeUntil } from 'rxjs/operators';
+import { filter, map, tap, switchMap, catchError, pluck, withLatestFrom } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { PrimitiveArray, Data } from 'billboard.js';
 import * as moment from 'moment-timezone';
 
 import { WebAppSettingDataService, AnalyticsService, TRACKED_EVENT_LIST, DynamicPopupService, MESSAGE_TO, StoreHelperService, MessageQueueService, AgentHistogramDataService, NewUrlStateNotificationService } from 'app/shared/services';
-import { HELP_VIEWER_LIST, HelpViewerPopupContainerComponent } from 'app/core/components/help-viewer-popup/help-viewer-popup-container.component';
 import { ServerMapData } from 'app/core/components/server-map/class/server-map-data.class';
 import { getMaxTickValue, getStackedData } from 'app/core/utils/chart-util';
 import { Actions } from 'app/shared/store';
-
-export enum SourceType {
-    MAIN = 'MAIN',
-    FILTERED = 'FILTERED',
-    INFO_PER_SERVER = 'INFO_PER_SERVER'
-}
-
-export enum Layer {
-    LOADING = 'loading',
-    RETRY = 'retry',
-    CHART = 'chart'
-}
+import { SourceType } from 'app/core/components/load-chart/load-chart-container.component';
+import { Layer } from 'app/core/components/load-chart/load-chart-container.component';
 
 @Component({
-    selector: 'pp-load-chart-container',
-    templateUrl: './load-chart-container.component.html',
-    styleUrls: ['./load-chart-container.component.css'],
+    selector: 'pp-load-avg-max-chart-container',
+    templateUrl: './load-avg-max-chart-container.component.html',
+    styleUrls: ['./load-avg-max-chart-container.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoadChartContainerComponent implements OnInit, OnDestroy {
+export class LoadAvgMaxChartContainerComponent implements OnInit, OnDestroy {
     @Input() sourceType: string;
 
     private unsubscribe = new Subject<void>();
@@ -102,9 +91,9 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
         this.agentHistogramDataService.getData(key, applicationName, serviceTypeCode, this.serverMapData, this.previousRange).pipe(
             map((data: any) => this.isAllAgent() ? data['timeSeriesHistogram'] : data['agentTimeSeriesHistogram'][this.selectedAgent])
         ).pipe(
-            map((data: IHistogram[]) => this.cleanStatisticsChartData(data)),
+            map((data: IHistogram[]) => this.cleanIntermediateChartData(data)),
             map((data: IHistogram[]) => this.makeChartData(data)),
-            withLatestFrom(this.storeHelperService.getLoadChartYMax(this.unsubscribe))
+            withLatestFrom(this.storeHelperService.getLoadAvgMaxChartYMax(this.unsubscribe))
         ).subscribe(([chartData, yMax]: [PrimitiveArray[], number]) => {
             this.chartConfig = {
                 dataConfig: this.makeDataOption(chartData),
@@ -116,7 +105,7 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
     }
 
     private initChartColors(): void {
-        this.chartColors = this.webAppSettingDataService.getColorByRequest();
+        this.chartColors = this.webAppSettingDataService.getColorByResponseStatistics();
     }
 
     private initI18nText(): void {
@@ -130,13 +119,6 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
     }
 
     private listenToEmitter(): void {
-        this.newUrlStateNotificationService.onUrlStateChange$.pipe(
-            takeUntil((this.unsubscribe)),
-        ).subscribe(() => {
-            this.serverMapData = null;
-            this.selectedTarget = null;
-        });
-
         this.storeHelperService.getTimezone(this.unsubscribe).subscribe((timezone: string) => {
             this.timezone = timezone;
         });
@@ -210,7 +192,6 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
             ),
             this.messageQueueService.receiveMessage(this.unsubscribe, MESSAGE_TO.REAL_TIME_SCATTER_CHART_X_RANGE).pipe(
                 filter(() => this.sourceType === SourceType.MAIN),
-                filter(() => !!this.serverMapData),
                 map(({from, to}: IScatterXRange) => [from, to]),
                 tap((range: number[]) => this.previousRange = range),
                 switchMap((range: number[]) => {
@@ -224,19 +205,19 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
                 }),
             )
         ).pipe(
-            map((data: IHistogram[]) => this.cleanStatisticsChartData(data)),
+            map((data: IHistogram[]) => this.cleanIntermediateChartData(data)),
             map((data) => this.makeChartData(data)),
             switchMap((data: PrimitiveArray[]) => {
                 if (this.shouldUpdateYMax()) {
                     const maxTickValue = getMaxTickValue(getStackedData(data), 1);
                     const yMax = maxTickValue === 0 ? this.defaultYMax : maxTickValue;
 
-                    this.storeHelperService.dispatch(new Actions.UpdateLoadChartYMax(yMax));
+                    this.storeHelperService.dispatch(new Actions.UpdateLoadAvgMaxChartYMax(yMax));
 
                     return of([data, yMax]);
                 } else {
                     return of(data).pipe(
-                        withLatestFrom(this.storeHelperService.getLoadChartYMax(this.unsubscribe))
+                        withLatestFrom(this.storeHelperService.getLoadAvgMaxChartYMax(this.unsubscribe))
                     );
                 }
             }),
@@ -264,10 +245,8 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
             : this.serverMapData.getLinkData(this.selectedTarget.link[0]);
     }
 
-    private cleanStatisticsChartData(data: IHistogram[]): IHistogram[] {
-        const excludes = ['Sum', 'Tot', 'Avg', 'Max'];
-        
-        return data ? data.filter(({key}: IHistogram) => excludes.indexOf(key) === -1) : null;
+    private cleanIntermediateChartData(data: IHistogram[]): IHistogram[] {
+        return data ? data.filter(({key}: IHistogram) => key === 'Max' || key === 'Avg') : null;
     }
 
     private makeChartData(data: IHistogram[]): PrimitiveArray[] {
@@ -343,7 +322,7 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
             tooltip: {
                 order: '',
                 format: {
-                    value: (v: number) => this.addComma(v.toString())
+                    value: (v: number) => this.convertWithUnit(v)
                 }
             },
             transition: {
@@ -352,12 +331,8 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
         };
     }
 
-    private addComma(str: string): string {
-        return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-    }
-
     private convertWithUnit(value: number): string {
-        const unitList = ['', 'K', 'M', 'G'];
+        const unitList = ['ms', 'sec'];
 
         return [...unitList].reduce((acc: string, curr: string, i: number, arr: string[]) => {
             const v = Number(acc);
@@ -369,23 +344,6 @@ export class LoadChartContainerComponent implements OnInit, OnDestroy {
     }
 
     onClickColumn($event: string): void {
-        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.CLICK_LOAD_GRAPH);
-    }
-
-    onShowHelp($event: MouseEvent): void {
-        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.TOGGLE_HELP_VIEWER, HELP_VIEWER_LIST.LOAD);
-        const {left, top, width, height} = ($event.target as HTMLElement).getBoundingClientRect();
-
-        this.dynamicPopupService.openPopup({
-            data: HELP_VIEWER_LIST.LOAD,
-            coord: {
-                coordX: left + width / 2,
-                coordY: top + height / 2
-            },
-            component: HelpViewerPopupContainerComponent
-        }, {
-            resolver: this.componentFactoryResolver,
-            injector: this.injector
-        });
+        this.analyticsService.trackEvent(TRACKED_EVENT_LIST.CLICK_LOAD_AVG_MAX_GRAPH);
     }
 }

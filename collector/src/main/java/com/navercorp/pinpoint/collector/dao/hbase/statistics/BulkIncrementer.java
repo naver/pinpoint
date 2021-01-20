@@ -35,17 +35,32 @@ public class BulkIncrementer {
 
     private final AtomicLongMap<RowInfo> counter = AtomicLongMap.create();
 
+    private final AtomicLongMap<RowInfo> max = AtomicLongMap.create();
+
     public BulkIncrementer(RowKeyMerge rowKeyMerge) {
         this.rowKeyMerge = Objects.requireNonNull(rowKeyMerge, "rowKeyMerge");
     }
 
     public void increment(TableName tableName, RowKey rowKey, ColumnName columnName) {
+        increment(tableName, rowKey, columnName, 1L);
+    }
+
+    public void increment(TableName tableName, RowKey rowKey, ColumnName columnName, long addition) {
         RowInfo rowInfo = new DefaultRowInfo(tableName, rowKey, columnName);
-        counter.incrementAndGet(rowInfo);
+        counter.addAndGet(rowInfo, addition);
+    }
+
+    public void updateMax(TableName tableName, RowKey rowKey, ColumnName columnName, long value) {
+        RowInfo rowInfo = new DefaultRowInfo(tableName, rowKey, columnName);
+        max.accumulateAndGet(rowInfo, value, Long::max);
     }
 
     public Map<TableName, List<Increment>> getIncrements(RowKeyDistributorByHashPrefix rowKeyDistributor) {
         final Map<RowInfo, Long> snapshot = AtomicLongMapUtils.remove(counter);
         return rowKeyMerge.createBulkIncrement(snapshot, rowKeyDistributor);
+    }
+
+    public Map<RowInfo, Long> getMaxUpdate() {
+        return AtomicLongMapUtils.remove(max);
     }
 }

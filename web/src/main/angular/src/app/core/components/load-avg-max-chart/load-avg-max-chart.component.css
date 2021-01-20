@@ -1,0 +1,21 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 200px;
+}
+
+:host(.show-chart) {
+    opacity: 1;
+    transition: all 1s;
+}
+
+:host(.shady-chart) {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: all 0.5s;
+}
+
+.l-chart-section {
+    width: 100%;
+    height: 100%;
+}
