@@ -16,6 +16,7 @@
 
 package com.navercorp.pinpoint.bootstrap.plugin.request;
 
+import com.navercorp.pinpoint.bootstrap.context.Header;
 import com.navercorp.pinpoint.bootstrap.context.Trace;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.context.TraceId;
@@ -23,6 +24,7 @@ import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.NameSpaceCheckFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.NameSpaceChecker;
+import com.navercorp.pinpoint.bootstrap.sampler.SamplingHint;
 import com.navercorp.pinpoint.common.util.Assert;
 
 /**
@@ -35,6 +37,7 @@ public class RequestTraceReader<T> {
     private final TraceContext traceContext;
     private final RequestAdaptor<T> requestAdaptor;
     private final boolean async;
+    private final boolean forceSamplingHeaderEnabled;
 
     private final TraceHeaderReader<T> traceHeaderReader;
     private final NameSpaceChecker<T> nameSpaceChecker;
@@ -50,6 +53,7 @@ public class RequestTraceReader<T> {
         this.async = async;
         String applicationNamespace = traceContext.getProfilerConfig().getApplicationNamespace();
         this.nameSpaceChecker = NameSpaceCheckFactory.newNamespace(requestAdaptor, applicationNamespace);
+        this.forceSamplingHeaderEnabled = traceContext.getProfilerConfig().readBoolean("profiler.sampling.force.header", false);
     }
 
     // Read the transaction information from the request.
@@ -83,6 +87,9 @@ public class RequestTraceReader<T> {
     }
 
     private Trace newTrace(T request) {
+        if (forceSamplingHeaderEnabled && requestAdaptor.getHeader(request, Header.HTTP_FORCE_SAMPLE.toString()) != null) {
+            SamplingHint.forceSampling();
+        }
         final Trace trace = newTrace();
         if (trace.canSampled()) {
             if (isDebug) {

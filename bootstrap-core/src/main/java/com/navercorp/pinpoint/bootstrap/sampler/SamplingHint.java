@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 NAVER Corp.
+ * Copyright 2020 NAVER Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,26 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.profiler.sampler;
-
-import com.navercorp.pinpoint.bootstrap.sampler.Sampler;
+package com.navercorp.pinpoint.bootstrap.sampler;
 
 /**
- * @author emeroad
+ * @author yjqg6666
  */
-public class SamplerFactory {
-    public Sampler createSampler(boolean sampling, int samplingRate) {
-        if (!sampling || samplingRate <= 0) {
-            return new FalseSampler();
-        }
-        if (samplingRate == 1) {
-            return new TrueSampler();
-        }
-        return new HintSamplingRateSampler(samplingRate);
+public class SamplingHint {
+
+    private static final ThreadLocal<Boolean> HINT = new ThreadLocal<Boolean>();
+
+    private SamplingHint() {
     }
+
+    public static boolean getAndReset() {
+        boolean hint = HINT.get() != null;
+        HINT.remove();
+        return hint;
+    }
+
+    public static void forceSampling() {
+        HINT.set(Boolean.TRUE);
+    }
+
 }

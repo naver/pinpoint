@@ -16,19 +16,17 @@
 
 package com.navercorp.pinpoint.profiler.sampler;
 
-import com.navercorp.pinpoint.bootstrap.sampler.Sampler;
+import com.navercorp.pinpoint.bootstrap.sampler.SamplingHint;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * @author emeroad
- */
-public class SamplerFactory {
-    public Sampler createSampler(boolean sampling, int samplingRate) {
-        if (!sampling || samplingRate <= 0) {
-            return new FalseSampler();
-        }
-        if (samplingRate == 1) {
-            return new TrueSampler();
-        }
-        return new HintSamplingRateSampler(samplingRate);
+public class HintSamplingRateSamplerTest {
+
+    @Test
+    public void testHint() {
+        SamplingHint.forceSampling();
+        HintSamplingRateSampler sampler = new HintSamplingRateSampler(100000);
+        Assert.assertTrue("force sampling failed", sampler.isSampling());
+        Assert.assertFalse("force sampling reset failed", sampler.isSampling());
     }
 }
