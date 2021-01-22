@@ -1,0 +1,3 @@
+serviceTypes:
+    - code: 6051
+      name: 'TOMCATJDBC'

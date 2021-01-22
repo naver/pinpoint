@@ -141,6 +141,7 @@ import static com.navercorp.pinpoint.common.trace.ServiceTypeProperty.*;
  * <tr><td>6001</td><td>THREAD_ASYNC</td></tr>
  * <tr><td>6005</td><td>PROCESS</td></tr>
  * <tr><td>6050</td><td>DBCP</td></tr>
+ * <tr><td>6051</td><td>TOMCATJDBC</td></tr>
  * <tr><td>6052</td><td>DBCP2</td></tr>
  * <tr><td>6060</td><td>HIKARICP</td></tr>
  * <tr><td>6062</td><td>DRUID</td></tr>
