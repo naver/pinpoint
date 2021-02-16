@@ -35,6 +35,7 @@ import com.navercorp.pinpoint.web.service.TransactionInfoService;
 import com.navercorp.pinpoint.web.util.DefaultMongoJsonParser;
 import com.navercorp.pinpoint.web.util.MongoJsonParser;
 import com.navercorp.pinpoint.web.util.OutputParameterMongoJsonParser;
+import com.navercorp.pinpoint.web.view.TraceViewerDataViewModel;
 import com.navercorp.pinpoint.web.view.TransactionInfoViewModel;
 import com.navercorp.pinpoint.web.view.TransactionTimelineInfoViewModel;
 import com.navercorp.pinpoint.web.vo.callstacks.RecordSet;
@@ -154,6 +155,27 @@ public class BusinessTransactionController {
         final ApplicationMap map = filteredMapService.selectApplicationMap(option);
         final RecordSet recordSet = this.transactionInfoService.createRecordSet(callTreeIterator, focusTimestamp, agentId, spanId);
         final TransactionInfoViewModel result = new TransactionInfoViewModel(transactionId, spanId, map.getNodes(), map.getLinks(), recordSet, spanResult.getTraceState(), logConfiguration);
+        return result;
+    }
+
+    @RequestMapping(value = "/traceViewerData", method = RequestMethod.GET)
+    @ResponseBody
+    public TraceViewerDataViewModel traceViewerData(@RequestParam("traceId") String traceIdParam,
+                                                    @RequestParam(value = "focusTimestamp", required = false, defaultValue = "0") long focusTimestamp,
+                                                    @RequestParam(value = "agentId", required = false) String agentId,
+                                                    @RequestParam(value = "spanId", required = false, defaultValue = "-1") long spanId) {
+        logger.debug("GET /traceViewerData params {traceId={}, focusTimestamp={}, agentId={}, spanId={}, v={}}", traceIdParam, focusTimestamp, agentId, spanId);
+
+        final TransactionId transactionId = TransactionIdUtils.parseTransactionId(traceIdParam);
+
+        final ColumnGetCount columnGetCount = ColumnGetCountFactory.create(callstackSelectSpansLimit);
+
+        // select spans
+        final CallTreeIterator callTreeIterator = this.spanService.selectSpan(transactionId, focusTimestamp, columnGetCount).getCallTree();
+
+        RecordSet recordSet = this.transactionInfoService.createRecordSet(callTreeIterator, focusTimestamp, agentId, spanId);
+
+        TraceViewerDataViewModel result = new TraceViewerDataViewModel(recordSet);
         return result;
     }
 
