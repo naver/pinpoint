@@ -63,12 +63,14 @@ public class RabbitMQConsumerHandleCompleteInboundCommandInterceptor implements 
 
     private final TraceContext traceContext;
     private final MethodDescriptor methodDescriptor;
+    private final RabbitMQClientPluginConfig config;
     private final Filter<String> excludeExchangeFilter;
 
     public RabbitMQConsumerHandleCompleteInboundCommandInterceptor(TraceContext traceContext, MethodDescriptor methodDescriptor, Filter<String> excludeExchangeFilter) {
         this.traceContext = traceContext;
         this.methodDescriptor = methodDescriptor;
         this.excludeExchangeFilter = excludeExchangeFilter;
+        this.config = new RabbitMQClientPluginConfig(traceContext.getProfilerConfig());
         this.traceContext.cacheApi(CONSUMER_ENTRY_METHOD_DESCRIPTOR);
     }
 
@@ -191,6 +193,12 @@ public class RabbitMQConsumerHandleCompleteInboundCommandInterceptor implements 
         if (transactionId == null) {
             return null;
         }
+
+        // If disconnect is true, dont continue the span
+        if(config.isTraceRabbitMqClientConsumerDisconnect()) {
+            return null;
+        }
+
         long parentSpanId = NumberUtils.parseLong(headers.get(RabbitMQClientConstants.META_PARENT_SPAN_ID).toString(), SpanId.NULL);
         long spanId = NumberUtils.parseLong(headers.get(RabbitMQClientConstants.META_SPAN_ID).toString(), SpanId.NULL);
         short flags = NumberUtils.parseShort(headers.get(RabbitMQClientConstants.META_FLAGS).toString(), (short) 0);

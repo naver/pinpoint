@@ -31,6 +31,7 @@ public class RabbitMQClientPluginConfig {
     private final boolean traceRabbitMQClient;
     private final boolean traceRabbitMQClientProducer;
     private final boolean traceRabbitMQClientConsumer;
+    private final boolean traceRabbitMqClientConsumerDisconnect;
     private final List<String> consumerClasses;
     private final Filter<String> excludeExchangeFilter;
 
@@ -38,6 +39,7 @@ public class RabbitMQClientPluginConfig {
         this.traceRabbitMQClient = config.readBoolean("profiler.rabbitmq.client.enable", true);
         this.traceRabbitMQClientProducer = config.readBoolean("profiler.rabbitmq.client.producer.enable", true);
         this.traceRabbitMQClientConsumer = config.readBoolean("profiler.rabbitmq.client.consumer.enable", true);
+        this.traceRabbitMqClientConsumerDisconnect = config.readBoolean("profiler.rabbitmq.client.consumer.disconnect.enable", false);
         this.consumerClasses = config.readList("profiler.rabbitmq.client.consumer.classes");
 
         String excludeExchange = config.readString("profiler.rabbitmq.client.exchange.exclude", "");
@@ -58,6 +60,10 @@ public class RabbitMQClientPluginConfig {
 
     public boolean isTraceRabbitMQClientConsumer() {
         return this.traceRabbitMQClientConsumer;
+    }
+
+    public boolean isTraceRabbitMqClientConsumerDisconnect() {
+        return traceRabbitMqClientConsumerDisconnect;
     }
 
     public List<String> getConsumerClasses() {
