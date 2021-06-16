@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee" xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:beans="http://www.springframework.org/schema/beans" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:hdp="http://www.springframework.org/schema/hadoop"
+       xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+    <context:annotation-config/>
+
+    <context:component-scan
+            base-package="com.navercorp.pinpoint.collector.dao.hbase,
+                        com.navercorp.pinpoint.collector.handler,
+                        com.navercorp.pinpoint.collector.mapper
+                        com.navercorp.pinpoint.collector.util
+                        com.navercorp.pinpoint.collector.config" />
+
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:hbase-test.properties</value>
+                <value>classpath:pinpoint-collector-test.properties</value>
+            </list>
+        </property>
+
+    </bean>
+
+    <util:properties id="pinpoint_collector_properties" location="classpath:pinpoint-collector-test.properties" />
+
+    <bean id="collectorConfiguration" class="com.navercorp.pinpoint.collector.config.CollectorConfiguration">
+        <property name="properties" ref="pinpoint_collector_properties"/>
+    </bean>
+
+    <import resource="classpath:applicationContext-hbase-test.xml"/>
+
+    <bean id="tcpDispatchHandler" class="com.navercorp.pinpoint.collector.receiver.TcpDispatchHandler"/>
+    <bean id="udpDispatchHandler" class="com.navercorp.pinpoint.collector.receiver.UdpDispatchHandler"/>
+    <bean id="udpSpanDispatchHandler" class="com.navercorp.pinpoint.collector.receiver.UdpSpanDispatchHandler"/>
+
+
+    <bean id="daoAutoFlusher" class="com.navercorp.pinpoint.collector.dao.AutoFlusher" init-method="initialize" destroy-method="shutdown">
+    	<beans:property name="cachedStatisticsDaoList">
+    		<beans:list>
+    			<beans:ref bean="hbaseMapStatisticsCallerDao"/>
+    			<beans:ref bean="hbaseMapStatisticsCalleeDao"/>
+                <beans:ref bean="hbaseMapResponseTimeDao"/>
+    		</beans:list>
+    	</beans:property>
+        <property name="flushPeriod" value="${statistics.flushPeriod}"/>
+    </bean>
+    
+    <bean id="metricRegistry" class="com.codahale.metrics.MetricRegistry">
+    </bean>
+
+    <bean id="collectorMetric" class="com.navercorp.pinpoint.collector.monitor.CollectorMetric">
+    </bean>
+
+    <!-- Cluster-related Beans -->
+    <bean id="commandHeaderTBaseSerializerFactory" class="com.navercorp.pinpoint.thrift.io.CommandHeaderTBaseSerializerFactory">
+    	<constructor-arg value="#{T(com.navercorp.pinpoint.common.Version).VERSION}" />
+    </bean>
+
+    <bean id="commandHeaderTBaseDeserializerFactory" class="com.navercorp.pinpoint.thrift.io.CommandHeaderTBaseDeserializerFactory">
+    	<constructor-arg value="#{T(com.navercorp.pinpoint.common.Version).VERSION}" />
+    </bean>
+
+    <bean id="clusterPointRouter" class="com.navercorp.pinpoint.collector.cluster.ClusterPointRouter">
+    </bean>
+    <bean id="clusterService" class="com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperClusterService">
+        <constructor-arg ref="collectorConfiguration"/>
+        <constructor-arg ref="clusterPointRouter"/>
+    </bean>
+
+    <bean id="tcpReceiver" class="com.navercorp.pinpoint.collector.receiver.tcp.TCPReceiver">
+        <constructor-arg type="com.navercorp.pinpoint.collector.receiver.DispatchHandler" ref="tcpDispatchHandler"/>
+        <constructor-arg value="#{collectorConfiguration.tcpListenIp}"/>
+        <constructor-arg value="#{collectorConfiguration.tcpListenPort}"/>
+        <constructor-arg type="com.navercorp.pinpoint.collector.cluster.zookeeper.ZookeeperClusterService" ref="clusterService"/>
+    </bean>
+
+    <bean id="udpSpanReceiver" class="com.navercorp.pinpoint.collector.receiver.udp.BaseUDPReceiver">
+        <constructor-arg value="Pinpoint-UDP-Span"/>
+        <constructor-arg type="com.navercorp.pinpoint.collector.receiver.DispatchHandler" ref="udpSpanDispatchHandler"/>
+        <constructor-arg value="#{collectorConfiguration.udpSpanListenIp}"/>
+        <constructor-arg value="#{collectorConfiguration.udpSpanListenPort}"/>
+        <constructor-arg value="#{collectorConfiguration.udpSpanSocketReceiveBufferSize}"/>
+        <constructor-arg value="#{collectorConfiguration.udpSpanWorkerThread}"/>
+        <constructor-arg value="#{collectorConfiguration.udpSpanWorkerQueueSize}"/>
+    </bean>
+
+    <bean id="udpStatReceiver" class="com.navercorp.pinpoint.collector.receiver.udp.BaseUDPReceiver">
+        <constructor-arg value="Pinpoint-UDP-Stat"/>
+        <constructor-arg type="com.navercorp.pinpoint.collector.receiver.DispatchHandler" ref="udpDispatchHandler"/>
+        <constructor-arg value="#{collectorConfiguration.udpStatListenIp}"/>
+        <constructor-arg value="#{collectorConfiguration.udpStatListenPort}"/>
+        <constructor-arg value="#{collectorConfiguration.udpStatSocketReceiveBufferSize}"/>
+        <constructor-arg value="#{collectorConfiguration.udpStatWorkerThread}"/>
+        <constructor-arg value="#{collectorConfiguration.udpStatWorkerQueueSize}"/>
+    </bean>
+    
+    <bean id="jsonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper">
+    </bean>
+
+    <bean id="hTable" class="com.navercorp.pinpoint.common.hbase.HBaseTables">
+    </bean>
+
+    <bean id="callerMerge" class="com.navercorp.pinpoint.collector.dao.hbase.statistics.RowKeyMerge">
+        <constructor-arg value="#{hTable.MAP_STATISTICS_CALLEE_CF_VER2_COUNTER}"/>
+    </bean>
+
+    <bean id="calleeMerge" class="com.navercorp.pinpoint.collector.dao.hbase.statistics.RowKeyMerge">
+        <constructor-arg value="#{hTable.MAP_STATISTICS_CALLER_CF_COUNTER}"/>
+    </bean>
+
+    <bean id="selfMerge" class="com.navercorp.pinpoint.collector.dao.hbase.statistics.RowKeyMerge">
+        <constructor-arg value="#{hTable.MAP_STATISTICS_SELF_CF_COUNTER}"/>
+    </bean>
+
+    <bean id="timeSlot" class="com.navercorp.pinpoint.common.util.DefaultTimeSlot">
+    </bean>
+
+
+    <bean id="typeLoaderService" class="com.navercorp.pinpoint.common.service.DefaultTypeLoaderService"/>
+    <bean id="serviceTypeRegistryService" class="com.navercorp.pinpoint.common.service.DefaultServiceTypeRegistryService">
+        <constructor-arg ref="typeLoaderService"/>
+    </bean>
+    
+</beans>

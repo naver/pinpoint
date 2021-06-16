@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xmlns:beans="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:hdp="http://www.springframework.org/schema/hadoop"
+       xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+    <context:annotation-config/>
+
+    <!--
+    <context:component-scan base-package="com.navercorp.pinpoint.web.dao.hbase,
+                                         com.navercorp.pinpoint.web.dao.mysql,
+                                         com.navercorp.pinpoint.web.service,
+                                         com.navercorp.pinpoint.web.mapper,
+                                         com.navercorp.pinpoint.web.filter" />
+    -->
+
+    <context:component-scan base-package="com.navercorp.pinpoint.web.dao.hbase,
+                                         com.navercorp.pinpoint.web.service,
+                                         com.navercorp.pinpoint.web.mapper,
+                                         com.navercorp.pinpoint.web.filter,
+                                         com.navercorp.pinpoint.web.config" />
+
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:test-hbase.properties</value>
+                <!-- 
+                <value>classpath:jdbc.properties</value>
+                -->
+            </list>
+        </property>
+    </bean>
+
+    <util:properties id="pinpointWebProps" location="classpath:pinpoint-web.properties"/>
+
+    <!-- 
+    <util:properties id="dataProps" location="classpath:data.properties"/>
+    -->
+
+    <import resource="classpath:applicationContext-hbase.xml" />
+
+    <!-- 
+    <import resource="classpath:applicationContext-datasource.xml" />
+    <import resource="classpath:applicationContext-dao-config.xml" />
+    <import resource="classpath:applicationContext-scheduler.xml" />
+    -->
+
+    <import resource="classpath:applicationContext-cache.xml" />
+
+    <bean id="spanMapper" class="com.navercorp.pinpoint.web.mapper.SpanMapper"></bean>
+    <bean id="annotationMapper" class="com.navercorp.pinpoint.web.mapper.AnnotationMapper"></bean>
+    <bean id="spanAnnotationMapper" class="com.navercorp.pinpoint.web.mapper.SpanMapper">
+        <property name="annotationMapper" ref="annotationMapper"/>
+    </bean>
+
+    <bean id="jsonObjectMapper" class="com.navercorp.pinpoint.web.view.PinpointObjectMapper">
+    </bean>
+
+    <bean id="rangeFactory" class="com.navercorp.pinpoint.web.vo.RangeFactory">
+    </bean>
+
+    <bean id="timeSlot" class="com.navercorp.pinpoint.common.util.DefaultTimeSlot">
+    </bean>
+
+    <bean id="config" class="com.navercorp.pinpoint.web.config.WebConfig">
+    </bean>
+
+    <bean id="commandHeaderTBaseSerializerFactory" class="com.navercorp.pinpoint.thrift.io.CommandHeaderTBaseSerializerFactory">
+        <constructor-arg value="#{T(com.navercorp.pinpoint.common.Version).VERSION}" />
+    </bean>
+
+    <bean id="commandHeaderTBaseDeserializerFactory" class="com.navercorp.pinpoint.thrift.io.CommandHeaderTBaseDeserializerFactory">
+        <constructor-arg value="#{T(com.navercorp.pinpoint.common.Version).VERSION}" />
+    </bean>
+
+    <bean id="pinpointSocketManager" class="com.navercorp.pinpoint.web.server.PinpointSocketManager">
+        <constructor-arg ref="config" />
+    </bean>
+
+    <bean id="typeLoaderService" class="com.navercorp.pinpoint.common.service.DefaultTypeLoaderService"/>
+    <bean id="serviceTypeRegistryService" class="com.navercorp.pinpoint.common.service.DefaultServiceTypeRegistryService">
+        <constructor-arg ref="typeLoaderService"/>
+    </bean>
+
+    <bean id="annotationKeyRegistryService" class="com.navercorp.pinpoint.common.service.DefaultAnnotationKeyRegistryService">
+        <constructor-arg ref="typeLoaderService"/>
+    </bean>
+
+</beans>
