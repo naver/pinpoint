@@ -148,6 +148,11 @@ ex) pinpoint.config when using logback
 ###########################################################
 profiler.logback.logging.transactioninfo=true
 ```
+To log each request with trace id, sample should be disabled or sample rate should be set to 100%.
+```
+# 1 out of n transactions will be sampled where n is the rate. (20: 5%)
+profiler.sampling.rate=1
+```
 
 **2-2 log4j, log4j2, logback configuration**
 
