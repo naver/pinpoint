@@ -21,6 +21,7 @@ import com.navercorp.pinpoint.bootstrap.instrument.InstrumentClass;
 import com.navercorp.pinpoint.bootstrap.instrument.InstrumentException;
 import com.navercorp.pinpoint.bootstrap.instrument.InstrumentMethod;
 import com.navercorp.pinpoint.bootstrap.instrument.Instrumentor;
+import com.navercorp.pinpoint.bootstrap.instrument.MethodFilters;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformCallback;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplate;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplateAware;
@@ -35,6 +36,7 @@ import com.navercorp.pinpoint.plugin.netty.interceptor.ChannelCloseMethodInterce
 import com.navercorp.pinpoint.plugin.netty.interceptor.ChannelPipelineWriteInterceptor;
 import com.navercorp.pinpoint.plugin.netty.interceptor.ChannelPromiseAddListenerInterceptor;
 import com.navercorp.pinpoint.plugin.netty.interceptor.ChannelPromiseNotifyInterceptor;
+import com.navercorp.pinpoint.plugin.netty.interceptor.PlatformDependentInterceptor;
 import com.navercorp.pinpoint.plugin.netty.transformer.http.HttpEncoderTransformer;
 import com.navercorp.pinpoint.plugin.netty.transformer.http.HttpRequestTransformer;
 
@@ -79,11 +81,26 @@ public class NettyPlugin implements ProfilerPlugin, TransformTemplateAware {
             transformTemplate.transform("io.netty.handler.codec.http.DefaultHttpRequest", HttpRequestTransformer.class);
             transformTemplate.transform("io.netty.handler.codec.http.HttpObjectEncoder", HttpEncoderTransformer.class);
         }
+
+        transformTemplate.transform("io.netty.util.internal.PlatformDependent", PlatformDependentTransform.class);
     }
 
     @Override
     public void setTransformTemplate(TransformTemplate transformTemplate) {
         this.transformTemplate = transformTemplate;
+    }
+
+    public static class PlatformDependentTransform implements TransformCallback {
+        @Override
+        public byte[] doInTransform(Instrumentor instrumentor, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws InstrumentException {
+            InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
+
+            for (InstrumentMethod method : target.getDeclaredMethods(MethodFilters.name("usedDirectMemory", "maxDirectMemory"))) {
+                method.addInterceptor(PlatformDependentInterceptor.class);
+            }
+
+            return target.toBytecode();
+        }
     }
 
     public static class BootstrapTransformer implements TransformCallback {
