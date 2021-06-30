@@ -20,15 +20,41 @@ import com.navercorp.pinpoint.bootstrap.sampler.Sampler;
 
 /**
  * @author emeroad
+ * @author yjqg6666
  */
 public class SamplerFactory {
+
     public Sampler createSampler(boolean sampling, int samplingRate) {
+        return createSampler(sampling, samplingRate, SamplerType.CLASSIC_RATE);
+    }
+
+    public Sampler createSampler(boolean sampling, int samplingRate, SamplerType type) {
         if (!sampling || samplingRate <= 0) {
             return new FalseSampler();
         }
+        if (type == null) {
+            return classicRateSampler(samplingRate);
+        }
+        switch (type) {
+            case PERCENT_RATE:
+                return percentRateSampler(samplingRate);
+            case CLASSIC_RATE:
+                return classicRateSampler(samplingRate);
+        }
+        return classicRateSampler(samplingRate);
+    }
+
+    private Sampler classicRateSampler(int samplingRate) {
         if (samplingRate == 1) {
             return new TrueSampler();
         }
         return new SamplingRateSampler(samplingRate);
+    }
+
+    private Sampler percentRateSampler(int samplingRate) {
+        if (samplingRate == 100) {
+            return new TrueSampler();
+        }
+        return new PercentRateSampler(samplingRate);
     }
 }
