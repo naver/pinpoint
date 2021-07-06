@@ -16,6 +16,7 @@
 
 package com.navercorp.pinpoint.bootstrap.plugin.response;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -86,6 +87,6 @@ public interface ResponseAdaptor<RESP> {
      * @return a (possibly empty) <code>Collection</code> of the values
      * of the response header with the given name
      */
-    Collection<String> getHeaders(RESP response, String name);
+    Collection<String> getHeaders(RESP response, String name) throws IOException;
 
 }

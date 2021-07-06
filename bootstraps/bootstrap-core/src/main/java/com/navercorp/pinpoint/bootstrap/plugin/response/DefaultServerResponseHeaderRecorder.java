@@ -17,10 +17,14 @@
 package com.navercorp.pinpoint.bootstrap.plugin.response;
 
 import com.navercorp.pinpoint.bootstrap.context.SpanCommonRecorder;
+import com.navercorp.pinpoint.bootstrap.logging.PLogger;
+import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.util.StringStringValue;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,6 +32,8 @@ import java.util.Objects;
  * @author yjqg6666
  */
 public class DefaultServerResponseHeaderRecorder<RESP> implements ServerResponseHeaderRecorder<RESP> {
+
+    private final PLogger logger = PLoggerFactory.getLogger(this.getClass());
 
     private final ResponseAdaptor<RESP> responseAdaptor;
     private final String[] recordHeaders;
@@ -42,12 +48,21 @@ public class DefaultServerResponseHeaderRecorder<RESP> implements ServerResponse
     public void recordHeader(final SpanCommonRecorder recorder, final RESP response) {
 
         for (String headerName : recordHeaders) {
-            final Collection<String> headers = responseAdaptor.getHeaders(response, headerName);
+            final Collection<String> headers = getHeaders(response, headerName);
             if (headers == null || headers.isEmpty()) {
                 continue;
             }
             StringStringValue header = new StringStringValue(headerName, formatHeaderValues(headers));
             recorder.recordAttribute(AnnotationKey.HTTP_RESPONSE_HEADER, header);
+        }
+    }
+
+    private Collection<String> getHeaders(final RESP response, String headerName) {
+        try {
+            return responseAdaptor.getHeaders(response, headerName);
+        } catch (IOException e) {
+            logger.warn("Extract response header {} from response {} failed, caused by:", headerName, response, e);
+            return Collections.emptyList();
         }
     }
 
