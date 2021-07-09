@@ -19,6 +19,7 @@ package com.navercorp.pinpoint.plugin.jdk.http.interceptor;
 import com.navercorp.pinpoint.bootstrap.context.*;
 import com.navercorp.pinpoint.bootstrap.interceptor.AroundInterceptor;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScope;
+import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScopeInvocation;
 import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.request.*;
@@ -30,6 +31,7 @@ import java.net.URL;
 /**
  * @author netspider
  * @author emeroad
+ * @author yjqg6666
  */
 public class HttpURLConnectionInterceptor implements AroundInterceptor {
     private static final Object TRACE_BLOCK_BEGIN_MARKER = new Object();
@@ -62,12 +64,16 @@ public class HttpURLConnectionInterceptor implements AroundInterceptor {
         if (isDebug) {
             logger.beforeInterceptor(target, args);
         }
+
+        if (target == null) {
+            return;
+        }
+
         Trace trace = traceContext.currentRawTraceObject();
         if (trace == null) {
             return;
         }
 
-        final HttpURLConnection request = (HttpURLConnection) target;
         boolean connected = false;
         if (target instanceof ConnectedGetter) {
             connected = ((ConnectedGetter) target)._$PINPOINT$_isConnected();
@@ -77,31 +83,61 @@ public class HttpURLConnectionInterceptor implements AroundInterceptor {
             connecting = ((ConnectingGetter) target)._$PINPOINT$_isConnecting();
         }
 
-        if (connected || connecting) {
-            return;
+        boolean addRequestHeader = !connected && !connecting;
+        if (isInterceptingHttps()) {
+            addRequestHeader = addRequestHeader && isInterceptingConnect();
         }
 
-        final boolean sampling = trace.canSampled();
-        if (!sampling) {
-            if (request != null) {
+        final HttpURLConnection request = (HttpURLConnection) target;
+        final boolean canSample = trace.canSampled();
+        if (canSample) {
+            scope.getCurrentInvocation().setAttachment(TRACE_BLOCK_BEGIN_MARKER);
+            final SpanEventRecorder recorder = trace.traceBlockBegin();
+            recorder.recordServiceType(JdkHttpConstants.SERVICE_TYPE);
+            if (addRequestHeader) {
+                final TraceId nextId = trace.getTraceId().getNextTraceId();
+                recorder.recordNextSpanId(nextId.getSpanId());
+                String host = getHost(request);
+                this.requestTraceWriter.write(request, nextId, host);
+            }
+        } else {
+            if (addRequestHeader) {
                 this.requestTraceWriter.write(request);
             }
-            return;
-        }
-
-        scope.getCurrentInvocation().setAttachment(TRACE_BLOCK_BEGIN_MARKER);
-
-        final SpanEventRecorder recorder = trace.traceBlockBegin();
-        recorder.recordServiceType(JdkHttpConstants.SERVICE_TYPE);
-        final TraceId nextId = trace.getTraceId().getNextTraceId();
-        recorder.recordNextSpanId(nextId.getSpanId());
-
-        if (request != null) {
-            String host = getHost(request);
-            this.requestTraceWriter.write(request, nextId, host);
         }
     }
 
+    @Override
+    public void after(Object target, Object[] args, Object result, Throwable throwable) {
+        if (isDebug) {
+            // do not log result
+            logger.afterInterceptor(target, args);
+        }
+        if (target == null) {
+            return;
+        }
+
+        Trace trace = traceContext.currentTraceObject();
+        if (trace == null || !trace.canSampled()) {
+            return;
+        }
+
+        final InterceptorScopeInvocation currentInvocation = scope.getCurrentInvocation();
+        if (TRACE_BLOCK_BEGIN_MARKER != currentInvocation.getAttachment()) {
+            return;
+        }
+
+        try {
+            final HttpURLConnection request = (HttpURLConnection) target;
+            final SpanEventRecorder recorder = trace.currentSpanEventRecorder();
+            recorder.recordApi(descriptor);
+            recorder.recordException(throwable);
+            this.clientRequestRecorder.record(recorder, request, throwable);
+        } finally {
+            currentInvocation.removeAttachment();
+            trace.traceBlockEnd();
+        }
+    }
 
     private String getHost(HttpURLConnection httpURLConnection) {
         final URL url = httpURLConnection.getURL();
@@ -115,33 +151,12 @@ public class HttpURLConnectionInterceptor implements AroundInterceptor {
         return null;
     }
 
-    @Override
-    public void after(Object target, Object[] args, Object result, Throwable throwable) {
-        if (isDebug) {
-            // do not log result
-            logger.afterInterceptor(target, args);
-        }
-
-        Trace trace = traceContext.currentTraceObject();
-        if (trace == null) {
-            return;
-        }
-
-        Object marker = scope.getCurrentInvocation().getAttachment();
-        if (marker != TRACE_BLOCK_BEGIN_MARKER) {
-            return;
-        }
-
-        try {
-            final SpanEventRecorder recorder = trace.currentSpanEventRecorder();
-            recorder.recordApi(descriptor);
-            recorder.recordException(throwable);
-            final HttpURLConnection request = (HttpURLConnection) target;
-            if (request != null) {
-                this.clientRequestRecorder.record(recorder, request, throwable);
-            }
-        } finally {
-            trace.traceBlockEnd();
-        }
+    private boolean isInterceptingConnect() {
+        return "connect".contentEquals(this.descriptor.getMethodName());
     }
+
+    private boolean isInterceptingHttps() {
+        return JdkHttpPlugin.INTERCEPT_HTTPS_CLASS_NAME.contentEquals(this.descriptor.getClassName());
+    }
+
 }
