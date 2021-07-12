@@ -46,7 +46,6 @@ public class JdkHttpPlugin implements ProfilerPlugin, TransformTemplateAware {
 
     public static final String INTERCEPT_HTTPS_CLASS_NAME = "sun.net.www.protocol.https.HttpsURLConnectionImpl";
 
-
     @Override
     public void setup(ProfilerPluginSetupContext context) {
         JdkHttpPluginConfig config = new JdkHttpPluginConfig(context.getConfig());
