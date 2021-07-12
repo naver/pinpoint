@@ -25,6 +25,8 @@ import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformCallback
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplate;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplateAware;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.ExecutionPolicy;
+import com.navercorp.pinpoint.bootstrap.logging.PLogger;
+import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPlugin;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
 import com.navercorp.pinpoint.bootstrap.plugin.util.InstrumentUtils;
@@ -40,11 +42,18 @@ public class JdkHttpPlugin implements ProfilerPlugin, TransformTemplateAware {
 
     private TransformTemplate transformTemplate;
 
+    private final PLogger logger = PLoggerFactory.getLogger(this.getClass());
+
     public static final String INTERCEPT_HTTPS_CLASS_NAME = "sun.net.www.protocol.https.HttpsURLConnectionImpl";
 
 
     @Override
     public void setup(ProfilerPluginSetupContext context) {
+        JdkHttpPluginConfig config = new JdkHttpPluginConfig(context.getConfig());
+        if (!config.isEnable()) {
+            logger.info("{} disabled", this.getClass().getSimpleName());
+            return;
+        }
         transformTemplate.transform("sun.net.www.protocol.http.HttpURLConnection", HttpURLConnectionTransform.class);
         transformTemplate.transform(INTERCEPT_HTTPS_CLASS_NAME, HttpURLConnectionTransform.class);
     }
