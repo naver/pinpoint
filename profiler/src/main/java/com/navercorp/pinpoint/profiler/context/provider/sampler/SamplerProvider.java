@@ -20,6 +20,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.navercorp.pinpoint.bootstrap.config.ProfilerConfig;
 import com.navercorp.pinpoint.bootstrap.sampler.Sampler;
+import com.navercorp.pinpoint.profiler.sampler.SamplerType;
 import com.navercorp.pinpoint.profiler.sampler.SamplerFactory;
 
 /**
@@ -40,6 +41,7 @@ public class SamplerProvider implements Provider<Sampler> {
         int samplingRate = profilerConfig.getSamplingRate();
 
         SamplerFactory samplerFactory = new SamplerFactory();
-        return samplerFactory.createSampler(samplingEnable, samplingRate);
+        String rateSamplerType = profilerConfig.readString("profiler.sampling.type", "classicRate");
+        return samplerFactory.createSampler(samplingEnable, samplingRate, SamplerType.of(rateSamplerType));
     }
 }
