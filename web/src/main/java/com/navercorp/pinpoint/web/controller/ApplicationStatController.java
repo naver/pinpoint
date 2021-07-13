@@ -32,15 +32,14 @@ import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author minwoo.jung
@@ -48,15 +47,15 @@ import java.util.List;
 public class ApplicationStatController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final ApplicationStatChartService applicationStatChartService;
 
     public ApplicationStatController(ApplicationStatChartService applicationStatChartService) {
-        this.applicationStatChartService = applicationStatChartService;
+        this.applicationStatChartService = Objects.requireNonNull(applicationStatChartService, "applicationStatChartService");
     }
 
     @PreAuthorize("hasPermission(#applicationId, 'application', 'inspector')")
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public StatChart getAgentStatChart(@RequestParam("applicationId") String applicationId, @RequestParam("from") long from, @RequestParam("to") long to) {
         TimeWindowSlotCentricSampler sampler = new TimeWindowSlotCentricSampler();
         TimeWindow timeWindow = new TimeWindow(Range.newRange(from, to), sampler);
@@ -68,7 +67,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/cpuLoad/chart")
     public static class ApplicationCpuLoadController extends ApplicationStatController {
         public ApplicationCpuLoadController(ApplicationCpuLoadService applicationCpuLoadService) {
@@ -76,7 +75,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/memory/chart")
     public static class ApplicationMemoryController extends ApplicationStatController {
         public ApplicationMemoryController(ApplicationMemoryService applicationMemoryService) {
@@ -84,7 +83,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/transaction/chart")
     public static class ApplicationTransactionController extends ApplicationStatController {
         public ApplicationTransactionController(ApplicationTransactionService applicationTransactionService) {
@@ -92,7 +91,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/activeTrace/chart")
     public static class ApplicationActiveTraceController extends ApplicationStatController {
         public ApplicationActiveTraceController(ApplicationActiveTraceService applicationActiveTraceService) {
@@ -100,7 +99,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/responseTime/chart")
     public static class ApplicationResponseTimeController extends ApplicationStatController {
         public ApplicationResponseTimeController(ApplicationResponseTimeService applicationResponseTimeService) {
@@ -108,7 +107,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/dataSource/chart")
     public static class ApplicationDataSourceController {
 
@@ -119,8 +118,7 @@ public class ApplicationStatController {
             this.applicationDataSourceService = applicationDataSourceService;
         }
 
-        @RequestMapping(method = RequestMethod.GET)
-        @ResponseBody
+        @GetMapping()
         public List<StatChart> getAgentStatChart(@RequestParam("applicationId") String applicationId, @RequestParam("from") long from, @RequestParam("to") long to) {
             TimeWindowSlotCentricSampler sampler = new TimeWindowSlotCentricSampler();
             TimeWindow timeWindow = new TimeWindow(Range.newRange(from, to), sampler);
@@ -133,7 +131,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/fileDescriptor/chart")
     public static class ApplicationFileDescriptorController extends ApplicationStatController {
         public ApplicationFileDescriptorController(ApplicationFileDescriptorService applicationFileDescriptorService) {
@@ -141,7 +139,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/directBuffer/chart")
     public static class ApplicationDirectBufferController extends ApplicationStatController {
         public ApplicationDirectBufferController(ApplicationDirectBufferService applicationDirectBufferService) {
@@ -149,7 +147,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/totalThreadCount/chart")
     public static class ApplicationTotalThreadCountController extends ApplicationStatController {
         public ApplicationTotalThreadCountController(ApplicationTotalThreadCountService applicationTotalThreadCountService) {
@@ -157,7 +155,7 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/loadedClass/chart")
     public static class ApplicationLoadedClassController extends ApplicationStatController {
         public ApplicationLoadedClassController(ApplicationLoadedClassService applicationLoadedClassService) {

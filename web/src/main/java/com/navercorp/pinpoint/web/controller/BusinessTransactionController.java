@@ -40,19 +40,17 @@ import com.navercorp.pinpoint.web.util.OutputParameterMongoJsonParser;
 import com.navercorp.pinpoint.web.view.TransactionInfoViewModel;
 import com.navercorp.pinpoint.web.view.TransactionTimelineInfoViewModel;
 import com.navercorp.pinpoint.web.vo.callstacks.RecordSet;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -60,21 +58,18 @@ import java.util.function.Predicate;
  * @author jaehong.kim
  * @author Taejin Koo
  */
-@Controller
+@RestController
 public class BusinessTransactionController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String DEFAULT_FOCUS_TIMESTAMP = "0";
     public static final String DEFAULT_SPANID = "-1"; // SpanId.NULL
 
-    @Autowired
-    private SpanService spanService;
-    @Autowired
-    private TransactionInfoService transactionInfoService;
-    @Autowired
-    private FilteredMapService filteredMapService;
-    @Autowired
-    private LogConfiguration logConfiguration;
+    private final SpanService spanService;
+    private final TransactionInfoService transactionInfoService;
+    private final FilteredMapService filteredMapService;
+    private final LogConfiguration logConfiguration;
+
     @Value("${web.callstack.selectSpans.limit:-1}")
     private int callstackSelectSpansLimit;
 
@@ -83,6 +78,14 @@ public class BusinessTransactionController {
     private final MongoJsonParser mongoJsonParser = new DefaultMongoJsonParser();
     private final OutputParameterMongoJsonParser parameterJsonParser = new OutputParameterMongoJsonParser();
 
+    public BusinessTransactionController(SpanService spanService, TransactionInfoService transactionInfoService,
+                                         FilteredMapService filteredMapService, LogConfiguration logConfiguration) {
+        this.spanService = Objects.requireNonNull(spanService, "spanService");
+        this.transactionInfoService = Objects.requireNonNull(transactionInfoService, "transactionInfoService");
+        this.filteredMapService = Objects.requireNonNull(filteredMapService, "filteredMapService");
+        this.logConfiguration = Objects.requireNonNull(logConfiguration, "logConfiguration");
+    }
+
     /**
      * info lookup for a selected transaction
      *
@@ -90,8 +93,7 @@ public class BusinessTransactionController {
      * @param focusTimestamp
      * @return
      */
-    @RequestMapping(value = "/transactionInfo", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/transactionInfo")
     public TransactionInfoViewModel transactionInfo(@RequestParam("traceId") String traceId,
                                                     @RequestParam(value = "focusTimestamp", required = false, defaultValue = DEFAULT_FOCUS_TIMESTAMP) long focusTimestamp,
                                                     @RequestParam(value = "agentId", required = false) String agentId,
@@ -128,8 +130,7 @@ public class BusinessTransactionController {
      * @param focusTimestamp
      * @return
      */
-    @RequestMapping(value = "/transactionTimelineInfo", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/transactionTimelineInfo")
     public TransactionTimelineInfoViewModel transactionTimelineInfo(@RequestParam("traceId") String traceId,
                                                                     @RequestParam(value = "focusTimestamp", required = false, defaultValue = DEFAULT_FOCUS_TIMESTAMP) long focusTimestamp,
                                                                     @RequestParam(value = "agentId", required = false) String agentId,
@@ -149,8 +150,7 @@ public class BusinessTransactionController {
         return result;
     }
 
-    @RequestMapping(value = "/transactionInfoV2", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/transactionInfoV2")
     public TransactionInfoViewModel transactionInfoV2(@RequestParam("traceId") String traceIdParam,
                                                       @RequestParam(value = "focusTimestamp", required = false, defaultValue = DEFAULT_FOCUS_TIMESTAMP) long focusTimestamp,
                                                       @RequestParam(value = "agentId", required = false) String agentId,
@@ -175,8 +175,7 @@ public class BusinessTransactionController {
         return result;
     }
 
-    @RequestMapping(value = "/bind", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/bind")
     public String metaDataBind(@RequestParam("type") String type,
                                @RequestParam("metaData") String metaData,
                                @RequestParam("bind") String bind) {

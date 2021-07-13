@@ -23,20 +23,26 @@ import com.navercorp.pinpoint.web.vo.UserGroupMemberParam;
 import com.navercorp.pinpoint.web.vo.exception.PinpointUserGroupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author minwoo.jung
  */
-@Controller
+@RestController
 @RequestMapping(value = "/userGroup")
 public class UserGroupController {
 
@@ -46,11 +52,13 @@ public class UserGroupController {
     public static final String USER_GROUP_ID = "userGroupId";
     public static final String USER_ID = "userId";
 
-    @Autowired
-    private UserGroupService userGroupService;
+    private final UserGroupService userGroupService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
+    public UserGroupController(UserGroupService userGroupService) {
+        this.userGroupService = Objects.requireNonNull(userGroupService, "userGroupService");
+    }
+
+    @PostMapping()
     public Map<String, String> createUserGroup(@RequestBody UserGroup userGroup) {
         if (ValueValidator.validateUserGroupId(userGroup.getId()) == false) {
             return createErrorMessage("500", "usergroupId pattern is invalid to create user group");
@@ -68,8 +76,7 @@ public class UserGroupController {
     }
 
     @PreAuthorize("hasPermission(#userGroup.getId(), null, T(com.navercorp.pinpoint.web.controller.UserGroupController).EDIT_GROUP_ONLY_GROUPMEMBER)")
-    @RequestMapping(method = RequestMethod.DELETE)
-    @ResponseBody
+    @DeleteMapping()
     public Map<String, String> deleteUserGroup(@RequestBody UserGroup userGroup) {
         if (StringUtils.isEmpty(userGroup.getId())) {
             return createErrorMessage("500", "there is id of userGroup in params to delete user group");
@@ -86,8 +93,7 @@ public class UserGroupController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public List<UserGroup> getUserGroup(@RequestParam(value = USER_ID, required = false) String userId, @RequestParam(value = USER_GROUP_ID, required = false) String userGroupId) {
         if (StringUtils.hasLength(userId)) {
             return userGroupService.selectUserGroupByUserId(userId);
@@ -98,8 +104,7 @@ public class UserGroupController {
     }
 
     @PreAuthorize("hasPermission(#userGroupMember.getUserGroupId(), null, T(com.navercorp.pinpoint.web.controller.UserGroupController).EDIT_GROUP_ONLY_GROUPMEMBER)")
-    @RequestMapping(value = "/member", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/member")
     public Map<String, String> insertUserGroupMember(@RequestBody UserGroupMemberParam userGroupMember) {
         if (StringUtils.isEmpty(userGroupMember.getMemberId()) || StringUtils.isEmpty(userGroupMember.getUserGroupId())) {
             return createErrorMessage("500", "there is not userGroupId or memberId in params to insert user group member");
@@ -113,8 +118,7 @@ public class UserGroupController {
     }
 
     @PreAuthorize("hasPermission(#userGroupMember.getUserGroupId(), null, T(com.navercorp.pinpoint.web.controller.UserGroupController).EDIT_GROUP_ONLY_GROUPMEMBER)")
-    @RequestMapping(value = "/member", method = RequestMethod.DELETE)
-    @ResponseBody
+    @DeleteMapping(value = "/member")
     public Map<String, String> deleteUserGroupMember(@RequestBody UserGroupMemberParam userGroupMember) {
         if (StringUtils.isEmpty(userGroupMember.getUserGroupId()) || StringUtils.isEmpty(userGroupMember.getMemberId())) {
             return createErrorMessage("500", "there is not userGroupId or memberId in params to delete user group member");
@@ -126,14 +130,12 @@ public class UserGroupController {
         return result;
     }
 
-    @RequestMapping(value = "/member", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/member")
     public List<UserGroupMember> getUserGroupMember(@RequestParam(USER_GROUP_ID) String userGroupId) {
         return userGroupService.selectMember(userGroupId);
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseBody
     public Map<String, String> handleException(Exception e) {
         logger.error("Exception occurred while trying to CRUD userGroup information", e);
         return createErrorMessage("500", "Exception occurred while trying to CRUD userGroup information");

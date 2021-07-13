@@ -21,39 +21,40 @@ import com.navercorp.pinpoint.web.service.AgentInfoService;
 import com.navercorp.pinpoint.web.service.ApplicationService;
 import com.navercorp.pinpoint.web.vo.ApplicationAgentHostList;
 import com.navercorp.pinpoint.web.vo.CodeResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
 
 /**
  * @author Taejin Koo
  */
 
-@Controller
+@RestController
 public class ApplicationController {
 
     private static final int CODE_SUCCESS = 0;
     private static final int CODE_FAIL = -1;
 
-    @Autowired
-    private AgentInfoService agentInfoService;
+    private final AgentInfoService agentInfoService;
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
 
-    @RequestMapping(value = "/getApplicationHostInfo", method = RequestMethod.GET, params = {"!durationDays"})
-    @ResponseBody
+    public ApplicationController(AgentInfoService agentInfoService, ApplicationService applicationService) {
+        this.agentInfoService = Objects.requireNonNull(agentInfoService, "agentInfoService");
+        this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
+    }
+
+    @GetMapping(value = "/getApplicationHostInfo", params = {"!durationDays"})
     public ApplicationAgentHostList getApplicationHostInfo (
             @RequestParam(value = "offset", required = false, defaultValue = "1") int offset,
             @RequestParam(value = "limit", required = false, defaultValue = "100") int limit) throws Exception {
         return agentInfoService.getApplicationAgentHostList(offset, limit);
     }
 
-    @RequestMapping(value = "/getApplicationHostInfo", method = RequestMethod.GET, params = {"durationDays"})
-    @ResponseBody
+    @GetMapping(value = "/getApplicationHostInfo", params = {"durationDays"})
     public ApplicationAgentHostList getApplicationHostInfo (
             @RequestParam(value = "offset", required = false, defaultValue = "1") int offset,
             @RequestParam(value = "limit", required = false, defaultValue = "100") int limit,
@@ -62,7 +63,6 @@ public class ApplicationController {
     }
 
     @RequestMapping(value = "/isAvailableApplicationName")
-    @ResponseBody
     public CodeResult isAvailableApplicationName(@RequestParam("applicationName") String applicationName) {
         if (!IdValidateUtils.checkLength(applicationName, PinpointConstants.APPLICATION_NAME_MAX_LEN)) {
             return new CodeResult(CODE_FAIL, "length range is 1 ~ 24");

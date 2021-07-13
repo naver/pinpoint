@@ -16,35 +16,34 @@
 
 package com.navercorp.pinpoint.web.controller;
 
-import java.util.List;
-
 import com.navercorp.pinpoint.web.service.CommonService;
 import com.navercorp.pinpoint.web.view.ApplicationGroup;
 import com.navercorp.pinpoint.web.view.ServerTime;
 import com.navercorp.pinpoint.web.vo.Application;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author emeroad
  * @author netspider
  */
-@Controller
+@RestController
 public class MainController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private CommonService commonService;
+    private final CommonService commonService;
 
-    @RequestMapping(value = "/applications", method = RequestMethod.GET)
-    @ResponseBody
+    public MainController(CommonService commonService) {
+        this.commonService = Objects.requireNonNull(commonService, "commonService");
+    }
+
+    @GetMapping(value = "/applications")
     public ApplicationGroup getApplicationGroup() {
         List<Application> applicationList = commonService.selectAllApplicationNames();
         logger.debug("/applications size:{}", applicationList.size());
@@ -53,8 +52,7 @@ public class MainController {
         return new ApplicationGroup(applicationList);
     }
 
-    @RequestMapping(value = "/serverTime", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/serverTime")
     public ServerTime getServerTime() {
         return new ServerTime();
     }
