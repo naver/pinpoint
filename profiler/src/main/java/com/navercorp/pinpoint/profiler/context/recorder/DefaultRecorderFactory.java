@@ -20,6 +20,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.navercorp.pinpoint.bootstrap.context.AsyncState;
 import com.navercorp.pinpoint.bootstrap.context.SpanRecorder;
+import com.navercorp.pinpoint.common.util.Assert;
+import com.navercorp.pinpoint.profiler.metadata.ExceptionRecordingService;
 import java.util.Objects;
 import com.navercorp.pinpoint.profiler.context.AsyncContextFactory;
 import com.navercorp.pinpoint.profiler.context.Span;
@@ -33,23 +35,25 @@ import com.navercorp.pinpoint.profiler.metadata.StringMetaDataService;
  */
 public class DefaultRecorderFactory implements RecorderFactory {
 
+    private final ExceptionRecordingService exceptionRecordingService;
     private final StringMetaDataService stringMetaDataService;
     private final SqlMetaDataService sqlMetaDataService;
     private final Provider<AsyncContextFactory> asyncContextFactoryProvider;
     private final IgnoreErrorHandler errorHandler;
 
     @Inject
-    public DefaultRecorderFactory(Provider<AsyncContextFactory> asyncContextFactoryProvider,
-                                  StringMetaDataService stringMetaDataService, SqlMetaDataService sqlMetaDataService, IgnoreErrorHandler errorHandler) {
-        this.asyncContextFactoryProvider = Objects.requireNonNull(asyncContextFactoryProvider, "asyncContextFactoryProvider");
-        this.stringMetaDataService = Objects.requireNonNull(stringMetaDataService, "stringMetaDataService");
-        this.sqlMetaDataService = Objects.requireNonNull(sqlMetaDataService, "sqlMetaDataService");
-        this.errorHandler = Objects.requireNonNull(errorHandler, "errorHandler");
+    public DefaultRecorderFactory(Provider<AsyncContextFactory> asyncContextFactoryProvider, ExceptionRecordingService exceptionRecordingService,
+        StringMetaDataService stringMetaDataService, SqlMetaDataService sqlMetaDataService, IgnoreErrorHandler errorHandler) {
+        this.exceptionRecordingService = Assert.requireNonNull(exceptionRecordingService, "exceptionRecordingService");
+        this.asyncContextFactoryProvider = Assert.requireNonNull(asyncContextFactoryProvider, "asyncContextFactoryProvider");
+        this.stringMetaDataService = Assert.requireNonNull(stringMetaDataService, "stringMetaDataService");
+        this.sqlMetaDataService = Assert.requireNonNull(sqlMetaDataService, "sqlMetaDataService");
+        this.errorHandler = Assert.requireNonNull(errorHandler, "errorHandler");
     }
 
     @Override
     public SpanRecorder newSpanRecorder(Span span, boolean isRoot, boolean sampling) {
-        return new DefaultSpanRecorder(span, isRoot, sampling, stringMetaDataService, sqlMetaDataService, errorHandler);
+        return new DefaultSpanRecorder(span, isRoot, sampling, exceptionRecordingService, stringMetaDataService, sqlMetaDataService, errorHandler);
     }
 
     @Override
@@ -60,7 +64,7 @@ public class DefaultRecorderFactory implements RecorderFactory {
     @Override
     public WrappedSpanEventRecorder newWrappedSpanEventRecorder(TraceRoot traceRoot) {
         final AsyncContextFactory asyncContextFactory = asyncContextFactoryProvider.get();
-        return new WrappedSpanEventRecorder(traceRoot, asyncContextFactory, stringMetaDataService, sqlMetaDataService, errorHandler);
+        return new WrappedSpanEventRecorder(traceRoot, asyncContextFactory, exceptionRecordingService, stringMetaDataService, sqlMetaDataService, errorHandler);
     }
 
     @Override
@@ -68,6 +72,6 @@ public class DefaultRecorderFactory implements RecorderFactory {
         Objects.requireNonNull(asyncState, "asyncState");
 
         final AsyncContextFactory asyncContextFactory = asyncContextFactoryProvider.get();
-        return new WrappedAsyncSpanEventRecorder(traceRoot, asyncContextFactory, stringMetaDataService, sqlMetaDataService, errorHandler, asyncState);
+        return new WrappedAsyncSpanEventRecorder(traceRoot, asyncContextFactory, exceptionRecordingService, stringMetaDataService, sqlMetaDataService, errorHandler, asyncState);
     }
 }

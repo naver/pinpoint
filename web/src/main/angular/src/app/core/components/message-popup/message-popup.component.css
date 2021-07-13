@@ -69,6 +69,7 @@
     word-break: break-all;
     overflow-y: auto;
     line-height: 2em;
+    white-space: pre;
 }
 .l-list a {
     color: var(--form-link);

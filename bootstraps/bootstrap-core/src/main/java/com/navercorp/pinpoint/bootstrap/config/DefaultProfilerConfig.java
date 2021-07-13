@@ -204,6 +204,11 @@ public class DefaultProfilerConfig implements ProfilerConfig {
     @Value("${profiler.uri.stat.completed.data.limit.size}")
     private int completedUriStatDataLimitSize = 3;
 
+    @Value("${profiler.exception.stacktrace.enable}")
+    private boolean exceptionStackTraceEnable = true;
+    @Value("${profiler.exception.stacktrace.line}")
+    private int exceptionStackTraceLine = 20;
+
     public DefaultProfilerConfig() {
         this.properties = new Properties();
     }
@@ -451,6 +456,16 @@ public class DefaultProfilerConfig implements ProfilerConfig {
     }
 
     @Override
+    public boolean getExceptionStackTraceEnable () {
+        return exceptionStackTraceEnable;
+    }
+
+    @Override
+    public int getExceptionStackTraceLine() {
+        return exceptionStackTraceLine;
+    }
+
+    @Override
     public boolean isPropagateInterceptorException() {
         return propagateInterceptorException;
     }
@@ -663,6 +678,8 @@ public class DefaultProfilerConfig implements ProfilerConfig {
         sb.append(", pluginLoadOrder=").append(pluginLoadOrder);
         sb.append(", disabledPlugins=").append(disabledPlugins);
         sb.append(", propagateInterceptorException=").append(propagateInterceptorException);
+        sb.append(", exceptionStackTraceEnable=").append(exceptionStackTraceEnable);
+        sb.append(", exceptionStackTraceLine=").append(exceptionStackTraceLine);
         sb.append(", supportLambdaExpressions=").append(supportLambdaExpressions);
         sb.append(", proxyHttpHeaderEnable=").append(proxyHttpHeaderEnable);
         sb.append(", httpStatusCodeErrors=").append(httpStatusCodeErrors);

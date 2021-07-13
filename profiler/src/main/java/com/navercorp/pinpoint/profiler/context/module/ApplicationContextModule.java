@@ -34,7 +34,9 @@ import com.navercorp.pinpoint.profiler.context.provider.BindVariableServiceProvi
 import com.navercorp.pinpoint.profiler.context.provider.UriExtractorProviderLocatorProvider;
 import com.navercorp.pinpoint.profiler.context.provider.UriStatRecorderFactoryProvider;
 import com.navercorp.pinpoint.profiler.context.provider.UriStatStorageProvider;
+import com.navercorp.pinpoint.profiler.context.provider.metadata.ExceptionRecordingServiceProvider;
 import com.navercorp.pinpoint.profiler.context.storage.UriStatStorage;
+import com.navercorp.pinpoint.profiler.metadata.ExceptionRecordingService;
 import com.navercorp.pinpoint.profiler.transformer.DefaultDynamicTransformerRegistry;
 import com.navercorp.pinpoint.profiler.transformer.DynamicTransformerRegistry;
 import com.navercorp.pinpoint.profiler.JvmInformation;
@@ -244,6 +246,7 @@ public class ApplicationContextModule extends AbstractModule {
         bind(StringMetaDataService.class).toProvider(StringMetadataServiceProvider.class).in(Scopes.SINGLETON);
         bind(ApiMetaDataService.class).toProvider(ApiMetaDataServiceProvider.class).in(Scopes.SINGLETON);
         bind(SqlMetaDataService.class).toProvider(SqlMetadataServiceProvider.class).in(Scopes.SINGLETON);
+        bind(ExceptionRecordingService.class).toProvider(ExceptionRecordingServiceProvider.class).in(Scopes.SINGLETON);
         bind(PredefinedMethodDescriptorRegistry.class).to(DefaultPredefinedMethodDescriptorRegistry.class).in(Scopes.SINGLETON);
     }
 

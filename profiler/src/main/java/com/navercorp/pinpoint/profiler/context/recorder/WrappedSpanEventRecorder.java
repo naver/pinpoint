@@ -21,6 +21,7 @@ import com.navercorp.pinpoint.bootstrap.context.ParsingResult;
 import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.trace.ServiceType;
+import com.navercorp.pinpoint.profiler.metadata.ExceptionRecordingService;
 import java.util.Objects;
 import com.navercorp.pinpoint.common.util.IntStringStringValue;
 import com.navercorp.pinpoint.common.util.StringUtils;
@@ -50,10 +51,10 @@ public class WrappedSpanEventRecorder extends AbstractRecorder implements SpanEv
 
     private SpanEvent spanEvent;
 
-    public WrappedSpanEventRecorder(TraceRoot traceRoot, AsyncContextFactory asyncContextFactory,
+    public WrappedSpanEventRecorder(TraceRoot traceRoot, AsyncContextFactory asyncContextFactory, ExceptionRecordingService exceptionRecordingService,
                                     final StringMetaDataService stringMetaDataService, final SqlMetaDataService sqlMetaCacheService,
                                     final IgnoreErrorHandler errorHandler) {
-        super(stringMetaDataService, sqlMetaCacheService, errorHandler);
+        super(exceptionRecordingService, stringMetaDataService, sqlMetaCacheService, errorHandler);
         this.traceRoot = Objects.requireNonNull(traceRoot, "traceRoot");
 
         this.asyncContextFactory = Objects.requireNonNull(asyncContextFactory, "asyncContextFactory");
