@@ -28,6 +28,7 @@ public interface ResponseAdaptor<RESP> {
      * Returns a boolean indicating whether the named response header
      * has already been set.
      *
+     * @param    response    response
      * @param    name    the header name
      * @return        <code>true</code> if the named response header
      * has already been set;
@@ -43,6 +44,7 @@ public interface ResponseAdaptor<RESP> {
      * used to test for the presence of a header before setting its
      * value.
      *
+     * @param    response    response
      * @param    name    the name of the header
      * @param    value    the header value  If it contains octet string,
      * it should be encoded according to RFC 2047
@@ -56,6 +58,7 @@ public interface ResponseAdaptor<RESP> {
      * Adds a response header with the given name and value.
      * This method allows response headers to have multiple values.
      *
+     * @param    response  response
      * @param    name    the name of the header
      * @param    value    the additional header value   If it contains
      * octet string, it should be encoded
@@ -72,6 +75,7 @@ public interface ResponseAdaptor<RESP> {
      * <p>If a response header with the given name exists and contains
      * multiple values, the value that was added first will be returned.
      *
+     * @param response response
      * @param name the name of the response header whose value to return
      * @return the value of the response header with the given name,
      * or <tt>null</tt> if no header with the given name has been set
@@ -88,5 +92,13 @@ public interface ResponseAdaptor<RESP> {
      * of the response header with the given name
      */
     Collection<String> getHeaders(RESP response, String name) throws IOException;
+
+    /**
+     * Gets all of the response header names
+     *
+     * @param response response
+     * @return a (possibly empty) <code>Collection</code> of response header names
+     */
+    Collection<String> getHeaderNames(RESP response) throws IOException;
 
 }

@@ -21,6 +21,8 @@ import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseAdaptor;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yjqg6666
@@ -53,5 +55,11 @@ public class JdkHttpClientResponseAdaptor implements ResponseAdaptor<HttpURLConn
     public Collection<String> getHeaders(HttpURLConnection response, String name) {
         final String val = response.getHeaderField(name);
         return val != null ? Collections.singletonList(val) : Collections.<String>emptyList();
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpURLConnection response) {
+        final Map<String, List<String>> headerFields = response.getHeaderFields();
+        return headerFields == null ? Collections.<String>emptySet() : headerFields.keySet();
     }
 }

@@ -50,4 +50,9 @@ public class HttpResponseAdaptor implements ResponseAdaptor<HttpServerResponse> 
     public Collection<String> getHeaders(HttpServerResponse response, String name) {
         return response.responseHeaders().getAllAsString(name);
     }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpServerResponse response) {
+        return response.responseHeaders().names();
+    }
 }

@@ -49,4 +49,9 @@ public class RestTemplateResponseHeaderAdaptor implements ResponseAdaptor<Client
     public Collection<String> getHeaders(ClientHttpResponse response, String name) {
         return response.getHeaders().get(name);
     }
+
+    @Override
+    public Collection<String> getHeaderNames(ClientHttpResponse response) {
+        return response.getHeaders().keySet();
+    }
 }

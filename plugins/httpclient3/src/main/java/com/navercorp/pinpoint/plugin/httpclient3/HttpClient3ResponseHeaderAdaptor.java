@@ -23,7 +23,9 @@ import org.apache.commons.httpclient.HttpMethod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author yjqg6666
@@ -60,6 +62,19 @@ public class HttpClient3ResponseHeaderAdaptor implements ResponseAdaptor<HttpMet
         List<String> values = new ArrayList<>(headers.length);
         for (Header header : headers) {
             values.add(header.getValue());
+        }
+        return values;
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpMethod response) {
+        final Header[] headers = response.getResponseHeaders();
+        if (headers == null || headers.length == 0) {
+            return Collections.emptyList();
+        }
+        Set<String> values = new HashSet<>(headers.length);
+        for (Header header : headers) {
+            values.add(header.getName());
         }
         return values;
     }

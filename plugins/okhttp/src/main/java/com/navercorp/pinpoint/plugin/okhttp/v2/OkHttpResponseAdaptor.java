@@ -17,9 +17,11 @@
 package com.navercorp.pinpoint.plugin.okhttp.v2;
 
 import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseAdaptor;
+import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.Response;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author yjqg6666
@@ -49,5 +51,11 @@ public class OkHttpResponseAdaptor implements ResponseAdaptor<Response> {
     @Override
     public Collection<String> getHeaders(Response response, String name) {
         return response.headers(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(Response response) {
+        final Headers headers = response.headers();
+        return headers == null ? Collections.<String>emptySet(): headers.names();
     }
 }

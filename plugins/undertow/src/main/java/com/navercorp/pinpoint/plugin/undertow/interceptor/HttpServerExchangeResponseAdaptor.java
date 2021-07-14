@@ -23,6 +23,8 @@ import io.undertow.util.HttpString;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author yjqg6666
@@ -54,6 +56,19 @@ public class HttpServerExchangeResponseAdaptor implements ResponseAdaptor<HttpSe
         final HeaderValues values = response.getResponseHeaders().get(name);
         if (values == null) {
             return Collections.emptyList();
+        }
+        return values;
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpServerExchange response) {
+        final Collection<HttpString> headerNames = response.getResponseHeaders().getHeaderNames();
+        if (headerNames == null) {
+            return Collections.emptyList();
+        }
+        Set<String> values = new HashSet<>(headerNames.size());
+        for (HttpString headerName : headerNames) {
+            values.add(headerName.toString());
         }
         return values;
     }

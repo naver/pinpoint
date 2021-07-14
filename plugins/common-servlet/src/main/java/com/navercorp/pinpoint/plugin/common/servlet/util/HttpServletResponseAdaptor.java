@@ -20,7 +20,6 @@ import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseAdaptor;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * @author yjqg6666
@@ -53,6 +52,11 @@ public class HttpServletResponseAdaptor implements ResponseAdaptor<HttpServletRe
     @Override
     public Collection<String> getHeaders(HttpServletResponse response, String name) {
         return response.getHeaders(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpServletResponse response) {
+        return response.getHeaderNames();
     }
 
 }

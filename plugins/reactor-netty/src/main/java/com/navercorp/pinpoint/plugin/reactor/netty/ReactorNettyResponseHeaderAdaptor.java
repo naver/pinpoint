@@ -50,4 +50,9 @@ public class ReactorNettyResponseHeaderAdaptor implements ResponseAdaptor<HttpRe
         return response.headers().getAllAsString(name);
     }
 
+    @Override
+    public Collection<String> getHeaderNames(HttpResponse response) {
+        return response.headers().names();
+    }
+
 }
