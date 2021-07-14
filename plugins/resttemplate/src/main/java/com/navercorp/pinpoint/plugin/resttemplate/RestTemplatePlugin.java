@@ -33,10 +33,12 @@ import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
 import com.navercorp.pinpoint.bootstrap.plugin.util.InstrumentUtils;
 import com.navercorp.pinpoint.plugin.resttemplate.field.accessor.TraceFutureFlagAccessor;
 import com.navercorp.pinpoint.plugin.resttemplate.interceptor.AsyncHttpRequestInterceptor;
+import com.navercorp.pinpoint.plugin.resttemplate.interceptor.ClientHttpResponseInterceptor;
 import com.navercorp.pinpoint.plugin.resttemplate.interceptor.HttpRequestInterceptor;
 import com.navercorp.pinpoint.plugin.resttemplate.interceptor.ListenableFutureInterceptor;
 
 import java.security.ProtectionDomain;
+import java.util.List;
 
 import static com.navercorp.pinpoint.common.util.VarArgs.va;
 
@@ -58,10 +60,30 @@ public class RestTemplatePlugin implements ProfilerPlugin, TransformTemplateAwar
         }
         logger.info("{} config:{}", this.getClass().getSimpleName(), config);
 
+        transformRequest();
+        transformResponse();
+    }
+
+    private void transformRequest() {
         transformTemplate.transform("org.springframework.web.client.RestTemplate", RestTemplateTransformer.class);
         transformTemplate.transform("org.springframework.http.client.AbstractClientHttpRequest", HttpRequestTransformer.class);
         transformTemplate.transform("org.springframework.http.client.AbstractAsyncClientHttpRequest", AsyncHttpRequestTransformer.class);
         transformTemplate.transform("org.springframework.util.concurrent.SettableListenableFuture", ListenableFutureTransformer.class);
+    }
+
+    private void transformResponse() {
+        String[] list = new String[]{
+                "org.springframework.http.client.BufferingClientHttpResponseWrapper",
+                "org.springframework.http.client.SimpleClientHttpResponse",
+                "org.springframework.http.client.HttpComponentsAsyncClientHttpResponse",
+                "org.springframework.http.client.HttpComponentsClientHttpResponse",
+                "org.springframework.http.client.OkHttp3ClientHttpResponse",
+                "org.springframework.http.client.OkHttpClientHttpResponse",
+                "org.springframework.http.client.Netty4ClientHttpResponse",
+        };
+        for (String i : list) {
+            transformTemplate.transform(i, ClientHttpResponseTransformer.class);
+        }
     }
 
     @Override
@@ -131,6 +153,25 @@ public class RestTemplatePlugin implements ProfilerPlugin, TransformTemplateAwar
             if (method != null) {
                 method.addInterceptor(ListenableFutureInterceptor.class);
             }
+            return target.toBytecode();
+        }
+
+    }
+
+    public static class ClientHttpResponseTransformer implements TransformCallback {
+
+        @Override
+        public byte[] doInTransform(Instrumentor instrumentor, ClassLoader classLoader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws InstrumentException {
+
+            final InstrumentClass target = instrumentor.getInstrumentClass(classLoader, className, classfileBuffer);
+
+            final List<InstrumentMethod> constructors = target.getDeclaredConstructors();
+            if (constructors != null && constructors.size() == 1) { //only intercept one-constructor response, no overloading
+                for (InstrumentMethod constructor : constructors) {
+                    constructor.addScopedInterceptor(ClientHttpResponseInterceptor.class, "HttpResponse", ExecutionPolicy.BOUNDARY);
+                }
+            }
+
             return target.toBytecode();
         }
 
