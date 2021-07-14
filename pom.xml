@@ -171,8 +171,8 @@
         <guava-jdk8.version>30.1-jre</guava-jdk8.version>
         <guava.version>${guava-jdk7.version}</guava.version>
 
-        <mybatis.spring.version>1.3.3</mybatis.spring.version>
-        <mybatis.version>3.4.6</mybatis.version>
+        <mybatis.spring.version>2.0.6</mybatis.spring.version>
+        <mybatis.version>3.5.7</mybatis.version>
 
         <jjwt.version>0.9.1</jjwt.version>
         <jaxb.version>2.3.1</jaxb.version>
@@ -637,8 +637,6 @@
             <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
-                <!-- build error mybatis-plugin 3.5.5 requried java8 -->
-<!--                <version>3.5.5</version>-->
                 <version>${mybatis.version}</version>
             </dependency>
             <dependency>
