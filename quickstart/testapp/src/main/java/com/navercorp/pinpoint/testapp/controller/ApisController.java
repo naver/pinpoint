@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -11,12 +12,10 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -26,16 +25,15 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 import com.navercorp.pinpoint.testapp.util.Description;
 
-@Controller(value = "apisController")
+@RestController(value = "apisController")
 public class ApisController {
 
     private final RequestMappingHandlerMapping handlerMapping;
 
-    private final Map<String, SortedSet<RequestMappedUri>> apiMappings = new TreeMap<String, SortedSet<RequestMappedUri>>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, SortedSet<RequestMappedUri>> apiMappings = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    @Autowired
     public ApisController(RequestMappingHandlerMapping handlerMapping) {
-        this.handlerMapping = handlerMapping;
+        this.handlerMapping = Objects.requireNonNull(handlerMapping, "handlerMapping");
     }
 
     @PostConstruct
@@ -74,7 +72,7 @@ public class ApisController {
         return requestMappedUris;
     }
 
-    @RequestMapping(value = {"/", "/index.html", "/apis"}, method = RequestMethod.GET)
+    @GetMapping(value = {"/", "/index.html", "/apis"})
     public String apis(Model model) {
         model.addAttribute("apiMappings", this.apiMappings);
         return "apis";

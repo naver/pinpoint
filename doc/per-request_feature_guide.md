@@ -227,7 +227,7 @@ We do not yet provide a way to retrieve the logs.
 
 example)
 ```java
-@Controller
+@RestController
 public class Nelo2LogController {
   
     @RequestMapping(value = "/????")
@@ -513,7 +513,7 @@ transactionId와 spanId, transaction 시작 시간을 파라미터로 받아서 
 
 example)
 ```java
-@Controller
+@RestController
 public class Nelo2LogController {
 
     @RequestMapping(value = "/XXXX")
