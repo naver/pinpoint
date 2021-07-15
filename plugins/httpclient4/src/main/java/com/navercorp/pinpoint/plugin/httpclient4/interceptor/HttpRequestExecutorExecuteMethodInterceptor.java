@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.plugin.httpclient4.interceptor;
 
-import com.navercorp.pinpoint.bootstrap.context.SpanCommonRecorder;
+import com.navercorp.pinpoint.bootstrap.context.AttributeRecorder;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScope;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.InterceptorScopeInvocation;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ClientHeaderAdaptor;
@@ -207,7 +207,7 @@ public class HttpRequestExecutorExecuteMethodInterceptor implements AroundInterc
         }
     }
 
-    private void recordResponseHeader(SpanCommonRecorder recorder, Object result) {
+    private void recordResponseHeader(AttributeRecorder recorder, Object result) {
         if (!(result instanceof HttpResponse)) {
             return;
         }

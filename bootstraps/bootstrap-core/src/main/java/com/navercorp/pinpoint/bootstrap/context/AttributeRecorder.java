@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package com.navercorp.pinpoint.bootstrap.plugin.response;
+package com.navercorp.pinpoint.bootstrap.context;
 
-import com.navercorp.pinpoint.bootstrap.context.AttributeRecorder;
+import com.navercorp.pinpoint.common.trace.AnnotationKey;
 
-public interface ServerResponseHeaderRecorder<RESP> {
+/**
+ * @author yjqg6666
+ */
+public interface AttributeRecorder {
 
-    String CONFIG_KEY_RECORD_RESP_HEADERS = "profiler.http.record.response.headers";
+    void recordAttribute(AnnotationKey key, String value);
 
-    void recordHeader(AttributeRecorder recorder, RESP response);
+    void recordAttribute(AnnotationKey key, int value);
+
+    void recordAttribute(AnnotationKey key, Object value);
 
 }

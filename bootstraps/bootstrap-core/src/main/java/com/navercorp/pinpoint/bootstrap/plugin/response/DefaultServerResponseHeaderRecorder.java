@@ -16,7 +16,7 @@
 
 package com.navercorp.pinpoint.bootstrap.plugin.response;
 
-import com.navercorp.pinpoint.bootstrap.context.SpanCommonRecorder;
+import com.navercorp.pinpoint.bootstrap.context.AttributeRecorder;
 import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
@@ -50,7 +50,7 @@ public class DefaultServerResponseHeaderRecorder<RESP> implements ServerResponse
     }
 
     @Override
-    public void recordHeader(final SpanCommonRecorder recorder, final RESP response) {
+    public void recordHeader(final AttributeRecorder recorder, final RESP response) {
         Collection<String> headerNames = recordAllHeaders ? getHeaderNames(response) : this.recordHeaders;
         for (String headerName : headerNames) {
             if (!StringUtils.hasText(headerName)) {
