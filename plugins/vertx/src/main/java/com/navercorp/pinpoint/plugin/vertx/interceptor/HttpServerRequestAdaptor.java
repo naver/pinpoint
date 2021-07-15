@@ -18,8 +18,12 @@ package com.navercorp.pinpoint.plugin.vertx.interceptor;
 
 import com.navercorp.pinpoint.bootstrap.plugin.request.RequestAdaptor;
 import com.navercorp.pinpoint.bootstrap.util.NetworkUtils;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.SocketAddress;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Woonduk Kang(emeroad)
@@ -32,6 +36,12 @@ public class HttpServerRequestAdaptor implements RequestAdaptor<HttpServerReques
     @Override
     public String getHeader(HttpServerRequest request, String name) {
         return request.getHeader(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpServerRequest request) {
+        final MultiMap headers = request.headers();
+        return headers == null ? Collections.<String>emptySet() : headers.names();
     }
 
 
