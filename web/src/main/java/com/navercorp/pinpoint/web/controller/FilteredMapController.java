@@ -31,14 +31,12 @@ import com.navercorp.pinpoint.web.vo.LimitedScanResult;
 import com.navercorp.pinpoint.web.vo.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -46,19 +44,21 @@ import java.util.List;
  * @author netspider
  * @author jaehong.kim
  */
-@Controller
+@RestController
 public class FilteredMapController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private FilteredMapService filteredMapService;
-    @Autowired
-    private FilterBuilder<List<SpanBo>> filterBuilder;
-    @Autowired
-    private ServiceTypeRegistryService registry;
+    private final FilteredMapService filteredMapService;
+    private final FilterBuilder<List<SpanBo>> filterBuilder;
+    private final ServiceTypeRegistryService registry;
 
-    @RequestMapping(value = "/getFilteredServerMapDataMadeOfDotGroup", method = RequestMethod.GET, params="serviceTypeCode")
-    @ResponseBody
+    public FilteredMapController(FilteredMapService filteredMapService, FilterBuilder<List<SpanBo>> filterBuilder, ServiceTypeRegistryService registry) {
+        this.filteredMapService = Objects.requireNonNull(filteredMapService, "filteredMapService");
+        this.filterBuilder = Objects.requireNonNull(filterBuilder, "filterBuilder");
+        this.registry = Objects.requireNonNull(registry, "registry");
+    }
+
+    @GetMapping(value = "/getFilteredServerMapDataMadeOfDotGroup", params="serviceTypeCode")
     public FilterMapWrap getFilteredServerMapDataMadeOfDotGroup(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") short serviceTypeCode,
@@ -75,8 +75,7 @@ public class FilteredMapController {
         return getFilteredServerMapDataMadeOfDotGroup(applicationName, serviceTypeName, from, to, originTo, xGroupUnit, yGroupUnit, filterText, filterHint, limit, viewVersion);
     }
 
-    @RequestMapping(value = "/getFilteredServerMapDataMadeOfDotGroupV2", method = RequestMethod.GET, params="serviceTypeCode")
-    @ResponseBody
+    @GetMapping(value = "/getFilteredServerMapDataMadeOfDotGroupV2", params="serviceTypeCode")
     public FilterMapWrap getFilteredServerMapDataMadeOfDotGroupV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") short serviceTypeCode,
@@ -93,8 +92,7 @@ public class FilteredMapController {
         return getFilteredServerMapDataMadeOfDotGroupV2(applicationName, serviceTypeName, from, to, originTo, xGroupUnit, yGroupUnit, filterText, filterHint, limit, viewVersion);
     }
 
-    @RequestMapping(value = "/getFilteredServerMapDataMadeOfDotGroup", method = RequestMethod.GET, params="serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getFilteredServerMapDataMadeOfDotGroup", params="serviceTypeName")
     public FilterMapWrap getFilteredServerMapDataMadeOfDotGroup(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,
@@ -137,8 +135,7 @@ public class FilteredMapController {
         return mapWrap;
     }
 
-    @RequestMapping(value = "/getFilteredServerMapDataMadeOfDotGroupV2", method = RequestMethod.GET, params="serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getFilteredServerMapDataMadeOfDotGroupV2", params="serviceTypeName")
     public FilterMapWrap getFilteredServerMapDataMadeOfDotGroupV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,

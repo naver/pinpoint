@@ -24,48 +24,48 @@ import com.navercorp.pinpoint.web.vo.AgentDownloadInfo;
 import com.navercorp.pinpoint.web.vo.AgentEvent;
 import com.navercorp.pinpoint.web.vo.AgentInfo;
 import com.navercorp.pinpoint.web.vo.AgentInfoFilter;
+import com.navercorp.pinpoint.web.vo.AgentInfoFilterChain;
 import com.navercorp.pinpoint.web.vo.AgentInstallationInfo;
 import com.navercorp.pinpoint.web.vo.AgentStatus;
-import com.navercorp.pinpoint.web.vo.AgentInfoFilterChain;
 import com.navercorp.pinpoint.web.vo.ApplicationAgentsList;
 import com.navercorp.pinpoint.web.vo.CodeResult;
 import com.navercorp.pinpoint.web.vo.DefaultAgentInfoFilter;
 import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.timeline.inspector.InspectorTimeline;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author HyunGil Jeong
  */
-@Controller
+@RestController
 public class AgentInfoController {
 
     private static final int CODE_SUCCESS = 0;
     private static final int CODE_FAIL = -1;
 
-    @Autowired
-    private AgentInfoService agentInfoService;
+    private final AgentInfoService agentInfoService;
 
-    @Autowired
-    private AgentEventService agentEventService;
+    private final AgentEventService agentEventService;
 
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"!application"})
-    @ResponseBody
+    public AgentInfoController(AgentInfoService agentInfoService, AgentEventService agentEventService) {
+        this.agentInfoService = Objects.requireNonNull(agentInfoService, "agentInfoService");
+        this.agentEventService = Objects.requireNonNull(agentEventService, "agentEventService");
+    }
+
+    @GetMapping(value = "/getAgentList", params = {"!application"})
     public ApplicationAgentsList getAgentList() {
         long timestamp = System.currentTimeMillis();
         return getAgentList(timestamp);
     }
 
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"!application", "from", "to"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentList", params = {"!application", "from", "to"})
     public ApplicationAgentsList getAgentList(
             @RequestParam("from") long from,
             @RequestParam("to") long to) {
@@ -75,23 +75,20 @@ public class AgentInfoController {
     }
 
     @PreAuthorize("hasPermission(#applicationName, 'application', 'inspector')")
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"!application", "timestamp"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentList", params = {"!application", "timestamp"})
     public ApplicationAgentsList getAgentList(
             @RequestParam("timestamp") long timestamp) {
         return this.agentInfoService.getAllApplicationAgentsList(AgentInfoFilter::accept, timestamp);
     }
 
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"application"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentList", params = {"application"})
     public ApplicationAgentsList getAgentList(@RequestParam("application") String applicationName) {
         long timestamp = System.currentTimeMillis();
         return getAgentList(applicationName, timestamp);
     }
 
     @PreAuthorize("hasPermission(#applicationName, 'application', 'inspector')")
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"application", "from", "to"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentList", params = {"application", "from", "to"})
     public ApplicationAgentsList getAgentList(
             @RequestParam("application") String applicationName,
             @RequestParam("from") long from,
@@ -105,8 +102,7 @@ public class AgentInfoController {
     }
 
     @PreAuthorize("hasPermission(#applicationName, 'application', 'inspector')")
-    @RequestMapping(value = "/getAgentList", method = RequestMethod.GET, params = {"application", "timestamp"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentList", params = {"application", "timestamp"})
     public ApplicationAgentsList getAgentList(
             @RequestParam("application") String applicationName,
             @RequestParam("timestamp") long timestamp) {
@@ -117,24 +113,21 @@ public class AgentInfoController {
         return this.agentInfoService.getApplicationAgentsList(ApplicationAgentsList.GroupBy.HOST_NAME, runningContainerFilter, applicationName, timestamp);
     }
 
-    @RequestMapping(value = "/getAgentInfo", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getAgentInfo")
     public AgentInfo getAgentInfo(
             @RequestParam("agentId") String agentId,
             @RequestParam("timestamp") long timestamp) {
         return this.agentInfoService.getAgentInfo(agentId, timestamp);
     }
 
-    @RequestMapping(value = "/getAgentStatus", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getAgentStatus")
     public AgentStatus getAgentStatus(
             @RequestParam("agentId") String agentId,
             @RequestParam("timestamp") long timestamp) {
         return this.agentInfoService.getAgentStatus(agentId, timestamp);
     }
 
-    @RequestMapping(value = "/getAgentEvent", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getAgentEvent")
     public AgentEvent getAgentEvent(
             @RequestParam("agentId") String agentId,
             @RequestParam("eventTimestamp") long eventTimestamp,
@@ -143,8 +136,7 @@ public class AgentInfoController {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/getAgentEvents", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getAgentEvents")
     public List<AgentEvent> getAgentEvents(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -155,8 +147,7 @@ public class AgentInfoController {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/getAgentStatusTimeline", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getAgentStatusTimeline")
     public InspectorTimeline getAgentStatusTimeline(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -166,8 +157,7 @@ public class AgentInfoController {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/getAgentStatusTimeline", method = RequestMethod.GET, params = {"exclude"})
-    @ResponseBody
+    @GetMapping(value = "/getAgentStatusTimeline", params = {"exclude"})
     public InspectorTimeline getAgentStatusTimeline(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -178,7 +168,6 @@ public class AgentInfoController {
     }
 
     @RequestMapping(value = "/isAvailableAgentId")
-    @ResponseBody
     public CodeResult isAvailableAgentId(@RequestParam("agentId") String agentId) {
         if (!IdValidateUtils.checkLength(agentId, PinpointConstants.AGENT_ID_MAX_LEN)) {
             return new CodeResult(CODE_FAIL, "length range is 1 ~ 24");
@@ -196,7 +185,6 @@ public class AgentInfoController {
     }
 
     @RequestMapping(value = "/getAgentInstallationInfo")
-    @ResponseBody
     public CodeResult getAgentDownloadUrl() {
         AgentDownloadInfo latestStableAgentDownloadInfo = agentInfoService.getLatestStableAgentDownloadInfo();
         if (latestStableAgentDownloadInfo != null) {

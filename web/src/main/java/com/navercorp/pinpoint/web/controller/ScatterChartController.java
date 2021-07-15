@@ -37,36 +37,38 @@ import com.navercorp.pinpoint.web.vo.Range;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author netspider
  * @author emeroad
  * @author jaehong.kim
  */
-@Controller
+@RestController
 public class ScatterChartController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private ScatterChartService scatter;
+    private final ScatterChartService scatter;
 
-    @Autowired
-    private FilteredMapService flow;
+    private final FilteredMapService flow;
 
-    @Autowired
-    private FilterBuilder<List<SpanBo>> filterBuilder;
+    private final FilterBuilder<List<SpanBo>> filterBuilder;
 
     private final GetTraceInfoParser getTraceInfoParser = new GetTraceInfoParser();
+
+    public ScatterChartController(ScatterChartService scatter, FilteredMapService flow, FilterBuilder<List<SpanBo>> filterBuilder) {
+        this.scatter = Objects.requireNonNull(scatter, "scatter");
+        this.flow = Objects.requireNonNull(flow, "flow");
+        this.filterBuilder = Objects.requireNonNull(filterBuilder, "filterBuilder");
+    }
 
 
     /**
@@ -75,8 +77,7 @@ public class ScatterChartController {
      * @param requestParam
      * @return
      */
-    @RequestMapping(value = "/transactionmetadata", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/transactionmetadata")
     public TransactionMetaDataViewModel transactionmetadata(@RequestParam Map<String, String> requestParam) {
         final List<GetTraceInfo> selectTraceInfoList = this.getTraceInfoParser.parse(requestParam);
 
@@ -97,8 +98,7 @@ public class ScatterChartController {
      *                        fetch the rest of the data
      * @return
      */
-    @RequestMapping(value = "/getScatterData", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getScatterData")
     public ScatterView.ResultView getScatterData(
             @RequestParam("application") String applicationName,
             @RequestParam("from") long from,

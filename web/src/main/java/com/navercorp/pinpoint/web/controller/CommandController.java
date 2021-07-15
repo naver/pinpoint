@@ -27,14 +27,14 @@ import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import java.util.Objects;
+
+@RestController
 @RequestMapping("/command")
 public class CommandController {
 
@@ -46,11 +46,13 @@ public class CommandController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private AgentService agentService;
+    private final AgentService agentService;
 
-    @RequestMapping(value = "/echo", method = RequestMethod.GET)
-    @ResponseBody
+    public CommandController(AgentService agentService) {
+        this.agentService = Objects.requireNonNull(agentService, "agentService");
+    }
+
+    @GetMapping(value = "/echo")
     public CodeResult echo(@RequestParam("applicationName") String applicationName, @RequestParam("agentId") String agentId,
                            @RequestParam("startTimeStamp") long startTimeStamp, @RequestParam("message") String message) throws TException {
 

@@ -1,5 +1,9 @@
 package com.navercorp.pinpoint.testapp.controller;
 
+import com.navercorp.pinpoint.testapp.util.Description;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -8,17 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.navercorp.pinpoint.testapp.util.Description;
-
-@Controller
+@RestController
 public class StressController {
 
     @RequestMapping("/consumeCpu")
-    @ResponseBody
     @Description("Call that consumes a lot of cpu time.")
     public Map<String, Object> consumeCpu() throws InterruptedException {
         int cpuCount = Runtime.getRuntime().availableProcessors();
@@ -42,7 +39,7 @@ public class StressController {
         return map;
     }
 
-    class ConsumeCpu implements Runnable {
+    static class ConsumeCpu implements Runnable {
 
         private final CountDownLatch latch;
         private final long limitTime;
@@ -74,7 +71,6 @@ public class StressController {
     }
 
     @RequestMapping("/consumeMemory")
-    @ResponseBody
     @Description("Call that consumes some memory that may trigger a few garbage collections.")
     public Map<String, Object> consumeMemory() throws InterruptedException {
         consumeMemory(1024 * 16, 20);
@@ -86,7 +82,6 @@ public class StressController {
     }
 
     @RequestMapping("/consumeMemoryLarge")
-    @ResponseBody
     @Description("Call that consumes a large amount of memory that will most likely trigger multiple garbage collections.")
     public Map<String, Object> consumeMemoryLarge() throws InterruptedException {
         consumeMemory(1024 * 16, 100);

@@ -32,15 +32,14 @@ import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author minwoo.jung
@@ -48,15 +47,15 @@ import java.util.List;
 public class ApplicationStatController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final ApplicationStatChartService applicationStatChartService;
 
     public ApplicationStatController(ApplicationStatChartService applicationStatChartService) {
-        this.applicationStatChartService = applicationStatChartService;
+        this.applicationStatChartService = Objects.requireNonNull(applicationStatChartService, "applicationStatChartService");
     }
 
     @PreAuthorize("hasPermission(#applicationId, 'application', 'inspector')")
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public StatChart getAgentStatChart(@RequestParam("applicationId") String applicationId, @RequestParam("from") long from, @RequestParam("to") long to) {
         TimeWindowSlotCentricSampler sampler = new TimeWindowSlotCentricSampler();
         TimeWindow timeWindow = new TimeWindow(Range.newRange(from, to), sampler);
@@ -68,65 +67,58 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/cpuLoad/chart")
     public static class ApplicationCpuLoadController extends ApplicationStatController {
-        @Autowired
         public ApplicationCpuLoadController(ApplicationCpuLoadService applicationCpuLoadService) {
             super(applicationCpuLoadService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/memory/chart")
     public static class ApplicationMemoryController extends ApplicationStatController {
-        @Autowired
         public ApplicationMemoryController(ApplicationMemoryService applicationMemoryService) {
             super(applicationMemoryService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/transaction/chart")
     public static class ApplicationTransactionController extends ApplicationStatController {
-        @Autowired
         public ApplicationTransactionController(ApplicationTransactionService applicationTransactionService) {
             super(applicationTransactionService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/activeTrace/chart")
     public static class ApplicationActiveTraceController extends ApplicationStatController {
-        @Autowired
         public ApplicationActiveTraceController(ApplicationActiveTraceService applicationActiveTraceService) {
             super(applicationActiveTraceService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/responseTime/chart")
     public static class ApplicationResponseTimeController extends ApplicationStatController {
-        @Autowired
         public ApplicationResponseTimeController(ApplicationResponseTimeService applicationResponseTimeService) {
             super(applicationResponseTimeService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/dataSource/chart")
     public static class ApplicationDataSourceController {
 
         private final Logger logger = LoggerFactory.getLogger(this.getClass());
         private final ApplicationDataSourceService applicationDataSourceService;
 
-        @Autowired
         public ApplicationDataSourceController(ApplicationDataSourceService applicationDataSourceService) {
             this.applicationDataSourceService = applicationDataSourceService;
         }
 
-        @RequestMapping(method = RequestMethod.GET)
-        @ResponseBody
+        @GetMapping()
         public List<StatChart> getAgentStatChart(@RequestParam("applicationId") String applicationId, @RequestParam("from") long from, @RequestParam("to") long to) {
             TimeWindowSlotCentricSampler sampler = new TimeWindowSlotCentricSampler();
             TimeWindow timeWindow = new TimeWindow(Range.newRange(from, to), sampler);
@@ -139,37 +131,33 @@ public class ApplicationStatController {
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/fileDescriptor/chart")
     public static class ApplicationFileDescriptorController extends ApplicationStatController {
-        @Autowired
         public ApplicationFileDescriptorController(ApplicationFileDescriptorService applicationFileDescriptorService) {
             super(applicationFileDescriptorService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/directBuffer/chart")
     public static class ApplicationDirectBufferController extends ApplicationStatController {
-        @Autowired
         public ApplicationDirectBufferController(ApplicationDirectBufferService applicationDirectBufferService) {
             super(applicationDirectBufferService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/totalThreadCount/chart")
     public static class ApplicationTotalThreadCountController extends ApplicationStatController {
-        @Autowired
         public ApplicationTotalThreadCountController(ApplicationTotalThreadCountService applicationTotalThreadCountService) {
             super(applicationTotalThreadCountService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getApplicationStat/loadedClass/chart")
     public static class ApplicationLoadedClassController extends ApplicationStatController {
-        @Autowired
         public ApplicationLoadedClassController(ApplicationLoadedClassService applicationLoadedClassService) {
             super(applicationLoadedClassService);
         }

@@ -15,42 +15,45 @@
  */
 package com.navercorp.pinpoint.web.controller;
 
+import com.navercorp.pinpoint.web.service.UserService;
+import com.navercorp.pinpoint.web.util.ValueValidator;
+import com.navercorp.pinpoint.web.vo.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.navercorp.pinpoint.web.util.ValueValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.navercorp.pinpoint.web.service.UserService;
-import com.navercorp.pinpoint.web.vo.User;
+import java.util.Objects;
 
 /**
  * @author minwoo.jung
  */
-@Controller
+@RestController
 @RequestMapping(value = "/user")
 public class UserController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public final static String USER_ID = "userid";
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
+    public UserController(UserService userService) {
+        this.userService = Objects.requireNonNull(userService, "userService");
+    }
+
+    @PostMapping()
     public Map<String, String> insertUser(@RequestBody User user) {
         if (ValueValidator.validateUser(user) == false) {
             Map<String, String> result = new HashMap<>();
@@ -66,8 +69,7 @@ public class UserController {
         return result;
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
-    @ResponseBody
+    @DeleteMapping()
     public Map<String, String> deletetUser(@RequestBody User user) {
         if (StringUtils.isEmpty(user.getUserId())) {
             Map<String, String> result = new HashMap<>();
@@ -83,8 +85,7 @@ public class UserController {
         return result;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public Object getUser(@RequestParam(value = "userId", required = false) String userId, @RequestParam(value = "searchKey", required = false) String searchKey) {
         try {
             if (userId != null) {
@@ -107,8 +108,7 @@ public class UserController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.PUT)
-    @ResponseBody
+    @PutMapping()
     public Map<String, String> updateUser(@RequestBody User user) {
         if (ValueValidator.validateUser(user) == false) {
             Map<String, String> result = new HashMap<>();
@@ -125,7 +125,6 @@ public class UserController {
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseBody
     public Map<String, String> handleException(Exception e) {
         logger.error(" Exception occurred while trying to CRUD user information", e);
 

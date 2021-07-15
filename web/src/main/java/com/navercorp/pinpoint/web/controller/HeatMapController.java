@@ -16,29 +16,29 @@ import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.scatter.Dot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@RestController()
 @RequestMapping("/heatmap")
-@Controller
 public class HeatMapController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private HeatMapService heatMap;
+    private final HeatMapService heatMap;
 
-    @RequestMapping(value = "/drag", method = RequestMethod.GET)
-    @ResponseBody
+    public HeatMapController(HeatMapService heatMap) {
+        this.heatMap = Objects.requireNonNull(heatMap, "heatMap");
+    }
+
+    @GetMapping(value = "/drag")
     public ResultView dragScatterArea(
             @RequestParam("application") String applicationName,
             @RequestParam("x1") long x1,
@@ -121,8 +121,7 @@ public class HeatMapController {
     }
 
 
-    @RequestMapping(value = "/get", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/get")
     public HeatMapController.HeatMapViewModel getHeatMapData(
             @RequestParam("application") String applicationName,
             @RequestParam("from") long from,

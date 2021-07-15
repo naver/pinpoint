@@ -12,19 +12,24 @@
     <mvc:annotation-driven>
         <mvc:path-matching suffix-pattern="true"/>
     </mvc:annotation-driven>
+
     <tx:annotation-driven />
+
     <context:component-scan
         base-package="com.navercorp.pinpoint.collector.manage.controller, com.navercorp.pinpoint.collector.controller">
     </context:component-scan>
 
+<!--    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>-->
     <bean id="jsonView"
-        class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+          class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
         <!-- another filter caches -->
         <property name="disableCaching" value="false" />
     </bean>
 
     <bean id="viewResolver"
-        class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+          class="org.springframework.web.servlet.view.BeanNameViewResolver" />
+
+    <bean id="viewResolver"  class="org.springframework.web.servlet.view.BeanNameViewResolver" />
 
     <mvc:interceptors>
         <bean id="webContentInterceptor"

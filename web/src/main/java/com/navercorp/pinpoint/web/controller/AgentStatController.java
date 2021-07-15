@@ -65,13 +65,11 @@ import com.navercorp.pinpoint.web.util.TimeWindowSampler;
 import com.navercorp.pinpoint.web.util.TimeWindowSlotCentricSampler;
 import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.stat.chart.StatChart;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -92,8 +90,7 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public List<T> getAgentStat(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -103,8 +100,7 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/chart", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/chart")
     public StatChart getAgentStatChart(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -115,8 +111,7 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/chart", method = RequestMethod.GET, params = {"interval"})
-    @ResponseBody
+    @GetMapping(value = "/chart", params = {"interval"})
     public StatChart getAgentStatChart(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -135,8 +130,7 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/chartList", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/chartList")
     public List<StatChart> getAgentStatChartList(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -147,8 +141,7 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     }
 
     @PreAuthorize("hasPermission(new com.navercorp.pinpoint.web.vo.AgentParam(#agentId, #to), 'agentParam', 'inspector')")
-    @RequestMapping(value = "/chartList", method = RequestMethod.GET, params = {"interval"})
-    @ResponseBody
+    @GetMapping(value = "/chartList", params = {"interval"})
     public List<StatChart> getAgentStatChartList(
             @RequestParam("agentId") String agentId,
             @RequestParam("from") long from,
@@ -166,120 +159,107 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
         return this.agentStatChartService.selectAgentChartList(agentId, timeWindow);
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/jvmGc")
     public static class JvmGcController extends AgentStatController<JvmGcBo> {
-        @Autowired
         public JvmGcController(JvmGcService jvmGcService, JvmGcChartService jvmGcChartService) {
             super(jvmGcService, jvmGcChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/jvmGcDetailed")
     public static class JvmGcDetailedController extends AgentStatController<JvmGcDetailedBo> {
-        @Autowired
         public JvmGcDetailedController(JvmGcDetailedService jvmGcDetailedService, JvmGcDetailedChartService jvmGcDetailedChartService) {
             super(jvmGcDetailedService, jvmGcDetailedChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/cpuLoad")
     public static class CpuLoadController extends AgentStatController<CpuLoadBo> {
-        @Autowired
         public CpuLoadController(CpuLoadService cpuLoadService, CpuLoadChartService cpuLoadChartService) {
             super(cpuLoadService, cpuLoadChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/transaction")
     public static class TransactionController extends AgentStatController<TransactionBo> {
-        @Autowired
         public TransactionController(TransactionService transactionService, TransactionChartService transactionChartService) {
             super(transactionService, transactionChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/activeTrace")
     public static class ActiveTraceController extends AgentStatController<ActiveTraceBo> {
-        @Autowired
         public ActiveTraceController(ActiveTraceService activeTraceService, ActiveTraceChartService activeTraceChartService) {
             super(activeTraceService, activeTraceChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/dataSource")
     public static class DataSourceController extends AgentStatController<DataSourceListBo> {
-        @Autowired
         public DataSourceController(DataSourceService dataSourceService, DataSourceChartService dataSourceChartService) {
             super(dataSourceService, dataSourceChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/responseTime")
     public static class ResponseTimeController extends AgentStatController<ResponseTimeBo> {
-        @Autowired
         public ResponseTimeController(ResponseTimeService responseTimeService, ResponseTimeChartService responseTimeChartService) {
             super(responseTimeService, responseTimeChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/deadlock")
     public static class DeadlockController extends AgentStatController<DeadlockThreadCountBo> {
-        @Autowired
         public DeadlockController(DeadlockService deadlockService, DeadlockChartService deadlockChartService) {
             super(deadlockService, deadlockChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/fileDescriptor")
     public static class FileDescriptorController extends AgentStatController<FileDescriptorBo> {
-        @Autowired
         public FileDescriptorController(FileDescriptorService fileDescriptorService, FileDescriptorChartService fileDescriptorChartService) {
             super(fileDescriptorService, fileDescriptorChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/directBuffer")
     public static class DirectBufferController extends AgentStatController<DirectBufferBo> {
-        @Autowired
         public DirectBufferController(DirectBufferService directBufferService, DirectBufferChartService directBufferChartService) {
             super(directBufferService, directBufferChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/totalThreadCount")
     public static class TotalThreadCountController extends AgentStatController<TotalThreadCountBo> {
-        @Autowired
         public TotalThreadCountController(TotalThreadCountService totalThreadCountService,
                                           TotalThreadCountChartService totalThreadCountChartService) {
             super(totalThreadCountService, totalThreadCountChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/loadedClass")
     public static class LoadedClassCountController extends AgentStatController<LoadedClassBo> {
-        @Autowired
         public LoadedClassCountController(LoadedClassCountService loadedClassCountService,
                                           LoadedClassCountChartService loadedClassCountChartService) {
             super(loadedClassCountService, loadedClassCountChartService);
         }
     }
 
-    @Controller
+    @RestController
     @RequestMapping("/getAgentStat/uriStat")
     public static class UriStatController extends AgentStatController<AgentUriStatBo> {
-        @Autowired
         public UriStatController(AgentUriStatService agentUriStatService,
                                              AgentUriStatChartService agentUriStatChartService) {
             super(agentUriStatService, agentUriStatChartService);

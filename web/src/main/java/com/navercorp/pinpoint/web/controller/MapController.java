@@ -37,15 +37,13 @@ import com.navercorp.pinpoint.web.vo.Range;
 import com.navercorp.pinpoint.web.vo.SearchOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,23 +56,25 @@ import java.util.Objects;
  * @author jaehong.kim
  * @author HyunGil Jeong
  */
-@Controller
+@RestController
 public class MapController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private MapService mapService;
-    @Autowired
-    private ResponseTimeHistogramService responseTimeHistogramService;
-    @Autowired
-    private Limiter dateLimit;
-    @Autowired
-    private ServiceTypeRegistryService registry;
-    @Autowired
-    private ApplicationFactory applicationFactory;
+    private final MapService mapService;
+    private final ResponseTimeHistogramService responseTimeHistogramService;
+    private final Limiter dateLimit;
+    private final ApplicationFactory applicationFactory;
 
     private static final String DEFAULT_SEARCH_DEPTH = "8";
     private static final int DEFAULT_MAX_SEARCH_DEPTH = 8;
+
+    public MapController(MapService mapService, ResponseTimeHistogramService responseTimeHistogramService,
+                         Limiter dateLimit, ApplicationFactory applicationFactory) {
+        this.mapService = Objects.requireNonNull(mapService, "mapService");
+        this.responseTimeHistogramService = Objects.requireNonNull(responseTimeHistogramService, "responseTimeHistogramService");
+        this.dateLimit = Objects.requireNonNull(dateLimit, "dateLimit");
+        this.applicationFactory = Objects.requireNonNull(applicationFactory, "applicationFactory");
+    }
 
     /**
      * Server map data query within from ~ to timeframe
@@ -85,8 +85,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapData", method = RequestMethod.GET, params="serviceTypeCode")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapData", params="serviceTypeCode")
     public MapWrap getServerMapData(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") short serviceTypeCode,
@@ -116,8 +115,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapData", method = RequestMethod.GET, params="serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapData", params="serviceTypeName")
     public MapWrap getServerMapData(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,
@@ -147,8 +145,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapDataV2", method = RequestMethod.GET, params="serviceTypeCode")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapDataV2", params="serviceTypeCode")
     public MapWrap getServerMapDataV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") short serviceTypeCode,
@@ -178,8 +175,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapDataV2", method = RequestMethod.GET, params="serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapDataV2", params="serviceTypeName")
     public MapWrap getServerMapDataV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,
@@ -209,8 +205,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapDataV3", method = RequestMethod.GET, params="serviceTypeCode")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapDataV3", params="serviceTypeCode")
     public MapWrap getServerMapDataV3(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") short serviceTypeCode,
@@ -239,8 +234,7 @@ public class MapController {
      * @param to
      * @return
      */
-    @RequestMapping(value = "/getServerMapDataV3", method = RequestMethod.GET, params="serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getServerMapDataV3", params="serviceTypeName")
     public MapWrap getServerMapDataV3(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,
@@ -289,8 +283,7 @@ public class MapController {
         }
     }
 
-    @RequestMapping(value = "/getResponseTimeHistogramData", method = RequestMethod.GET, params = "serviceTypeName")
-    @ResponseBody
+    @GetMapping(value = "/getResponseTimeHistogramData", params = "serviceTypeName")
     public ApplicationTimeHistogramViewModel getResponseTimeHistogramData(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeName") String serviceTypeName,
@@ -307,8 +300,7 @@ public class MapController {
 
     }
 
-    @RequestMapping(value = "/getResponseTimeHistogramDataV2", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/getResponseTimeHistogramDataV2")
     public NodeHistogramSummary postResponseTimeHistogramDataV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") Short serviceTypeCode,
@@ -327,8 +319,7 @@ public class MapController {
         return responseTimeHistogramService.selectNodeHistogramData(option);
     }
 
-    @RequestMapping(value = "/getResponseTimeHistogramDataV3", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping(value = "/getResponseTimeHistogramDataV3")
     public NodeHistogramSummary postResponseTimeHistogramDataV3(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") Short serviceTypeCode,
@@ -347,8 +338,7 @@ public class MapController {
         return responseTimeHistogramService.selectNodeHistogramData(option);
     }
 
-    @RequestMapping(value = "/getResponseTimeHistogramDataV2", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getResponseTimeHistogramDataV2")
     public NodeHistogramSummary getResponseTimeHistogramDataV2(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") Short serviceTypeCode,
@@ -385,8 +375,7 @@ public class MapController {
         return responseTimeHistogramService.selectNodeHistogramData(option);
     }
 
-    @RequestMapping(value = "/getResponseTimeHistogramDataV3", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getResponseTimeHistogramDataV3")
     public NodeHistogramSummary getResponseTimeHistogramDataV3(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("serviceTypeCode") Short serviceTypeCode,
@@ -437,8 +426,7 @@ public class MapController {
         return applications;
     }
 
-    @RequestMapping(value = "/getLinkTimeHistogramData", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getLinkTimeHistogramData")
     public LinkHistogramSummary getLinkTimeHistogramData(
             @RequestParam(value = "fromApplicationName", required = false) String fromApplicationName,
             @RequestParam(value = "fromServiceTypeCode", required = false) Short fromServiceTypeCode,

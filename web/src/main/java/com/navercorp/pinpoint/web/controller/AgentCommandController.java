@@ -33,36 +33,36 @@ import com.navercorp.pinpoint.web.vo.AgentInfo;
 import com.navercorp.pinpoint.web.vo.CodeResult;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Taejin Koo
  */
-@Controller
+@RestController
 @RequestMapping("/agent")
 public class AgentCommandController {
 
     private static final int CODE_SUCCESS = 0;
     private static final int CODE_FAIL = -1;
 
-    @Autowired
-    private AgentService agentService;
+    private final ConfigProperties webProperties;
+    private final AgentService agentService;
 
-    @Autowired
-    private ConfigProperties webProperties;
+    public AgentCommandController(ConfigProperties webProperties, AgentService agentService) {
+        this.agentService = Objects.requireNonNull(agentService, "agentService");
+        this.webProperties = Objects.requireNonNull(webProperties, "webProperties");
+    }
 
-    @RequestMapping(value = "/activeThreadDump", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/activeThreadDump")
     public CodeResult getActiveThreadDump(@RequestParam(value = "applicationName") String applicationName,
                                           @RequestParam(value = "agentId") String agentId,
                                           @RequestParam(value = "limit", required = false, defaultValue = "-1") int limit,
@@ -133,8 +133,7 @@ public class AgentCommandController {
         return response;
     }
 
-    @RequestMapping(value = "/activeThreadLightDump", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/activeThreadLightDump")
     public CodeResult getActiveThreadLightDump(@RequestParam(value = "applicationName") String applicationName,
                                                  @RequestParam(value = "agentId") String agentId,
                                                  @RequestParam(value = "limit", required = false, defaultValue = "-1") int limit,

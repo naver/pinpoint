@@ -16,31 +16,32 @@
 
 package com.navercorp.pinpoint.web.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.navercorp.pinpoint.web.alarm.CheckerCategory;
 import com.navercorp.pinpoint.web.alarm.vo.Rule;
 import com.navercorp.pinpoint.web.service.AlarmService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author minwoo.jung
  */
-@Controller
+@RestController
 @RequestMapping(value={"/alarmRule", "/application/alarmRule"})
 public class AlarmController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -49,12 +50,14 @@ public class AlarmController {
     public final static String USER_GROUP_ID = "userGroupId";
     public final static String APPLICATION_ID = "applicationId";
 
-    @Autowired
-    private AlarmService alarmService;
+    private final AlarmService alarmService;
+
+    public AlarmController(AlarmService alarmService) {
+        this.alarmService = Objects.requireNonNull(alarmService, "alarmService");
+    }
 
     @PreAuthorize("hasPermission(#rule.getApplicationId(), null, T(com.navercorp.pinpoint.web.controller.AlarmController).EDIT_ALARM_ONLY_MANAGER)")
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping()
     public Map<String, String> insertRule(@RequestBody Rule rule) {
         Map<String, String> result = new HashMap<>();
 
@@ -72,8 +75,7 @@ public class AlarmController {
     }
 
     @PreAuthorize("hasPermission(#rule.getApplicationId(), null, T(com.navercorp.pinpoint.web.controller.AlarmController).EDIT_ALARM_ONLY_MANAGER)")
-    @RequestMapping(method = RequestMethod.DELETE)
-    @ResponseBody
+    @DeleteMapping()
     public Map<String, String> deleteRule(@RequestBody Rule rule) {
         if (StringUtils.isEmpty(rule.getRuleId())) {
             Map<String, String> result = new HashMap<>();
@@ -89,8 +91,7 @@ public class AlarmController {
         return result;
     }
     
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping()
     public Object getRule(@RequestParam(value=USER_GROUP_ID, required=false) String userGroupId, @RequestParam(value=APPLICATION_ID, required=false) String applicationId) {
         if (StringUtils.isEmpty(userGroupId) && StringUtils.isEmpty(applicationId)) {
             Map<String, String> result = new HashMap<>();
@@ -107,8 +108,7 @@ public class AlarmController {
     }
 
     @PreAuthorize("hasPermission(#rule.getApplicationId(), null, T(com.navercorp.pinpoint.web.controller.AlarmController).EDIT_ALARM_ONLY_MANAGER)")
-    @RequestMapping(method = RequestMethod.PUT)
-    @ResponseBody
+    @PutMapping()
     public Map<String, String> updateRule(@RequestBody Rule rule) {
         Map<String, String> result = new HashMap<>();
 
@@ -124,14 +124,12 @@ public class AlarmController {
         return result;
     }
     
-    @RequestMapping(value = "/checker", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/checker")
     public List<String> getCheckerName() {
         return CheckerCategory.getNames();
     }
     
     @ExceptionHandler(Exception.class)
-    @ResponseBody
     public Map<String, String> handleException(Exception e) {
         logger.error(" Exception occurred while trying to CRUD Alarm Rule information", e);
         
