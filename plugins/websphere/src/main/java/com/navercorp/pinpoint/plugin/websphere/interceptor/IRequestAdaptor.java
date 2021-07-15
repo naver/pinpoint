@@ -21,6 +21,8 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.RequestAdaptor;
 import com.navercorp.pinpoint.bootstrap.util.NetworkUtils;
 import com.navercorp.pinpoint.common.plugin.util.HostAndPort;
 
+import java.util.Collection;
+
 /**
  * @author Woonduk Kang(emeroad)
  */
@@ -28,6 +30,14 @@ public class IRequestAdaptor implements RequestAdaptor<IRequest> {
     @Override
     public String getHeader(IRequest request, String name) {
         return request.getHeader(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(IRequest request) {
+        //todo to be replaced with websphere IRequest.getHeaderNames
+        //throw new UnsupportedOperationException("not implemented yet!");
+        //request.getHeaderNames() return enumeration of String ?
+        return null;
     }
 
     @Override
