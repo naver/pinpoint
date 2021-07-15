@@ -16,6 +16,8 @@
 
 package com.navercorp.pinpoint.collector.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.navercorp.pinpoint.collector.cluster.AgentInfo;
 import com.navercorp.pinpoint.collector.cluster.ClusterPoint;
 import com.navercorp.pinpoint.collector.cluster.ClusterPointLocator;
@@ -31,20 +33,15 @@ import com.navercorp.pinpoint.rpc.common.SocketStateCode;
 import com.navercorp.pinpoint.thrift.dto.command.TCommandEcho;
 import com.navercorp.pinpoint.thrift.io.CommandHeaderTBaseDeserializerFactory;
 import com.navercorp.pinpoint.thrift.io.HeaderTBaseDeserializer;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import org.apache.thrift.TBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -54,7 +51,7 @@ import java.util.Objects;
 /**
  * @author Taejin Koo
  */
-@Controller
+@RestController
 @RequestMapping("/cluster/grpc")
 public class ClusterPointController {
 
@@ -64,20 +61,17 @@ public class ClusterPointController {
 
     private final HeaderTBaseDeserializer tBaseDeserializer = CommandHeaderTBaseDeserializerFactory.getDefaultInstance().createDeserializer();
 
-
     private final ClusterPointLocator clusterPointLocator;
 
     private final ObjectMapper mapper;
 
 
-    @Autowired
     public ClusterPointController(ClusterPointLocator clusterPointLocator, ObjectMapper mapper) {
         this.clusterPointLocator = Objects.requireNonNull(clusterPointLocator, "clusterPointLocator");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
-    @RequestMapping(value = "/html/getClusterPoint", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/html/getClusterPoint")
     public String getClusterPointToHtml(
             @RequestParam("applicationName") String applicationName,
             @RequestParam(value = "agentId", defaultValue = "") String agentId,
@@ -87,8 +81,7 @@ public class ClusterPointController {
         return buildHtml(result);
     }
 
-    @RequestMapping(value = "/getClusterPoint", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/getClusterPoint")
     public String getClusterPoint(
             @RequestParam("applicationName") String applicationName,
             @RequestParam(value = "agentId", defaultValue = "") String agentId,
@@ -98,8 +91,7 @@ public class ClusterPointController {
         return mapper.writeValueAsString(result);
     }
 
-    @RequestMapping(value = "/checkConnectionStatus", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/checkConnectionStatus")
     public String checkConnectionStatus(
             @RequestParam("applicationName") String applicationName,
             @RequestParam("agentId") String agentId,

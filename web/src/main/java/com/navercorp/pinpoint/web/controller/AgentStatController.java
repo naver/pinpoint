@@ -169,7 +169,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/jvmGc")
     public static class JvmGcController extends AgentStatController<JvmGcBo> {
-        @Autowired
         public JvmGcController(JvmGcService jvmGcService, JvmGcChartService jvmGcChartService) {
             super(jvmGcService, jvmGcChartService);
         }
@@ -178,7 +177,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/jvmGcDetailed")
     public static class JvmGcDetailedController extends AgentStatController<JvmGcDetailedBo> {
-        @Autowired
         public JvmGcDetailedController(JvmGcDetailedService jvmGcDetailedService, JvmGcDetailedChartService jvmGcDetailedChartService) {
             super(jvmGcDetailedService, jvmGcDetailedChartService);
         }
@@ -187,7 +185,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/cpuLoad")
     public static class CpuLoadController extends AgentStatController<CpuLoadBo> {
-        @Autowired
         public CpuLoadController(CpuLoadService cpuLoadService, CpuLoadChartService cpuLoadChartService) {
             super(cpuLoadService, cpuLoadChartService);
         }
@@ -196,7 +193,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/transaction")
     public static class TransactionController extends AgentStatController<TransactionBo> {
-        @Autowired
         public TransactionController(TransactionService transactionService, TransactionChartService transactionChartService) {
             super(transactionService, transactionChartService);
         }
@@ -205,7 +201,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/activeTrace")
     public static class ActiveTraceController extends AgentStatController<ActiveTraceBo> {
-        @Autowired
         public ActiveTraceController(ActiveTraceService activeTraceService, ActiveTraceChartService activeTraceChartService) {
             super(activeTraceService, activeTraceChartService);
         }
@@ -214,7 +209,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/dataSource")
     public static class DataSourceController extends AgentStatController<DataSourceListBo> {
-        @Autowired
         public DataSourceController(DataSourceService dataSourceService, DataSourceChartService dataSourceChartService) {
             super(dataSourceService, dataSourceChartService);
         }
@@ -223,7 +217,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/responseTime")
     public static class ResponseTimeController extends AgentStatController<ResponseTimeBo> {
-        @Autowired
         public ResponseTimeController(ResponseTimeService responseTimeService, ResponseTimeChartService responseTimeChartService) {
             super(responseTimeService, responseTimeChartService);
         }
@@ -232,7 +225,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/deadlock")
     public static class DeadlockController extends AgentStatController<DeadlockThreadCountBo> {
-        @Autowired
         public DeadlockController(DeadlockService deadlockService, DeadlockChartService deadlockChartService) {
             super(deadlockService, deadlockChartService);
         }
@@ -241,7 +233,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/fileDescriptor")
     public static class FileDescriptorController extends AgentStatController<FileDescriptorBo> {
-        @Autowired
         public FileDescriptorController(FileDescriptorService fileDescriptorService, FileDescriptorChartService fileDescriptorChartService) {
             super(fileDescriptorService, fileDescriptorChartService);
         }
@@ -250,7 +241,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/directBuffer")
     public static class DirectBufferController extends AgentStatController<DirectBufferBo> {
-        @Autowired
         public DirectBufferController(DirectBufferService directBufferService, DirectBufferChartService directBufferChartService) {
             super(directBufferService, directBufferChartService);
         }
@@ -259,7 +249,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/totalThreadCount")
     public static class TotalThreadCountController extends AgentStatController<TotalThreadCountBo> {
-        @Autowired
         public TotalThreadCountController(TotalThreadCountService totalThreadCountService,
                                           TotalThreadCountChartService totalThreadCountChartService) {
             super(totalThreadCountService, totalThreadCountChartService);
@@ -269,7 +258,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/loadedClass")
     public static class LoadedClassCountController extends AgentStatController<LoadedClassBo> {
-        @Autowired
         public LoadedClassCountController(LoadedClassCountService loadedClassCountService,
                                           LoadedClassCountChartService loadedClassCountChartService) {
             super(loadedClassCountService, loadedClassCountChartService);
@@ -279,7 +267,6 @@ public abstract class AgentStatController<T extends AgentStatDataPoint> {
     @Controller
     @RequestMapping("/getAgentStat/uriStat")
     public static class UriStatController extends AgentStatController<AgentUriStatBo> {
-        @Autowired
         public UriStatController(AgentUriStatService agentUriStatService,
                                              AgentUriStatChartService agentUriStatChartService) {
             super(agentUriStatService, agentUriStatChartService);

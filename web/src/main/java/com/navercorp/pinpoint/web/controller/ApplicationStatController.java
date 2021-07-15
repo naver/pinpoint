@@ -71,7 +71,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/cpuLoad/chart")
     public static class ApplicationCpuLoadController extends ApplicationStatController {
-        @Autowired
         public ApplicationCpuLoadController(ApplicationCpuLoadService applicationCpuLoadService) {
             super(applicationCpuLoadService);
         }
@@ -80,7 +79,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/memory/chart")
     public static class ApplicationMemoryController extends ApplicationStatController {
-        @Autowired
         public ApplicationMemoryController(ApplicationMemoryService applicationMemoryService) {
             super(applicationMemoryService);
         }
@@ -89,7 +87,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/transaction/chart")
     public static class ApplicationTransactionController extends ApplicationStatController {
-        @Autowired
         public ApplicationTransactionController(ApplicationTransactionService applicationTransactionService) {
             super(applicationTransactionService);
         }
@@ -98,7 +95,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/activeTrace/chart")
     public static class ApplicationActiveTraceController extends ApplicationStatController {
-        @Autowired
         public ApplicationActiveTraceController(ApplicationActiveTraceService applicationActiveTraceService) {
             super(applicationActiveTraceService);
         }
@@ -107,7 +103,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/responseTime/chart")
     public static class ApplicationResponseTimeController extends ApplicationStatController {
-        @Autowired
         public ApplicationResponseTimeController(ApplicationResponseTimeService applicationResponseTimeService) {
             super(applicationResponseTimeService);
         }
@@ -120,7 +115,6 @@ public class ApplicationStatController {
         private final Logger logger = LoggerFactory.getLogger(this.getClass());
         private final ApplicationDataSourceService applicationDataSourceService;
 
-        @Autowired
         public ApplicationDataSourceController(ApplicationDataSourceService applicationDataSourceService) {
             this.applicationDataSourceService = applicationDataSourceService;
         }
@@ -142,7 +136,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/fileDescriptor/chart")
     public static class ApplicationFileDescriptorController extends ApplicationStatController {
-        @Autowired
         public ApplicationFileDescriptorController(ApplicationFileDescriptorService applicationFileDescriptorService) {
             super(applicationFileDescriptorService);
         }
@@ -151,7 +144,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/directBuffer/chart")
     public static class ApplicationDirectBufferController extends ApplicationStatController {
-        @Autowired
         public ApplicationDirectBufferController(ApplicationDirectBufferService applicationDirectBufferService) {
             super(applicationDirectBufferService);
         }
@@ -160,7 +152,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/totalThreadCount/chart")
     public static class ApplicationTotalThreadCountController extends ApplicationStatController {
-        @Autowired
         public ApplicationTotalThreadCountController(ApplicationTotalThreadCountService applicationTotalThreadCountService) {
             super(applicationTotalThreadCountService);
         }
@@ -169,7 +160,6 @@ public class ApplicationStatController {
     @Controller
     @RequestMapping("/getApplicationStat/loadedClass/chart")
     public static class ApplicationLoadedClassController extends ApplicationStatController {
-        @Autowired
         public ApplicationLoadedClassController(ApplicationLoadedClassService applicationLoadedClassService) {
             super(applicationLoadedClassService);
         }

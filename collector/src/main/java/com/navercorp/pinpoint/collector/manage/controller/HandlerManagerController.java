@@ -16,11 +16,9 @@
 
 package com.navercorp.pinpoint.collector.manage.controller;
 
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.navercorp.pinpoint.collector.manage.HandlerManager;
 
@@ -29,7 +27,7 @@ import java.util.Objects;
 /**
  * @author Taejin Koo
  */
-@Controller
+@RestController
 @RequestMapping("/admin")
 public class HandlerManagerController {
 
@@ -39,37 +37,34 @@ public class HandlerManagerController {
         this.handlerManager = Objects.requireNonNull(handlerManager, "handlerManager");
     }
 
-    @RequestMapping(value = "/enableAccess", method = RequestMethod.GET)
-    @ResponseBody
-    public ModelAndView enableAccess() {
+    @GetMapping(value = "/enableAccess")
+    public SimpleResult enableAccess() {
         try {
             handlerManager.enableAccess();
-            return ControllerUtils.createJsonView(true);
+            return new SimpleResult(true);
         } catch (Exception e) {
-            return ControllerUtils.createJsonView(false, e.getMessage());
+            return new SimpleResult(false, e.getMessage());
         }
     }
 
-    @RequestMapping(value = "/disableAccess", method = RequestMethod.GET)
-    @ResponseBody
-    public ModelAndView disableAccess() {
+    @GetMapping(value = "/disableAccess")
+    public SimpleResult disableAccess() {
         try {
             handlerManager.disableAccess();
-            return ControllerUtils.createJsonView(true);
+            return new SimpleResult(true);
         } catch (Exception e) {
-            return ControllerUtils.createJsonView(false, e.getMessage());
+            return new SimpleResult(false, e.getMessage());
         }
     }
 
-    @RequestMapping(value = "/isEnable", method = RequestMethod.GET)
-    @ResponseBody
-    public ModelAndView isEnable() {
+    @GetMapping(value = "/isEnable")
+    public SimpleResult isEnable() {
         boolean isEnable = handlerManager.isEnable();
-        
-        ModelAndView mv = ControllerUtils.createJsonView(true);
-        mv.addObject("isEnable", isEnable);
-        
-        return mv;
+
+        SimpleResult simpleResult = new SimpleResult(true);
+        simpleResult.addAttribute("isEnable", isEnable);
+
+        return simpleResult;
     }
 
 }

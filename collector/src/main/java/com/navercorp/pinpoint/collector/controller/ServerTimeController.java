@@ -17,19 +17,16 @@
 package com.navercorp.pinpoint.collector.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Taejin Koo
  */
-@Controller
+@RestController
 public class ServerTimeController {
 
-    @RequestMapping(value = "/serverTime", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping(value = "/serverTime")
     public ServerTime getServerTime() {
         return new ServerTime();
     }
