@@ -27,16 +27,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SamplingRateSampler implements Sampler {
 
     private final AtomicInteger counter = new AtomicInteger(0);
-    private final int samplingRate;
+    private volatile int samplingRate;
 
     public SamplingRateSampler(int samplingRate) {
+        updateSamplingRate(samplingRate);
+    }
+
+    public void updateSamplingRate(int samplingRate) {
         if (samplingRate <= 0) {
             throw new IllegalArgumentException("Invalid samplingRate " + samplingRate);
         }
         this.samplingRate = samplingRate;
     }
-
-
 
     @Override
     public boolean isSampling() {
