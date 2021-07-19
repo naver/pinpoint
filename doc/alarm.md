@@ -234,7 +234,7 @@ Set up a MYSQL server and configure connection information in [jdbc-root.propert
 
 ```properties
 jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:13306/pinpoint?characterEncoding=UTF-8
+jdbc.url=jdbc:mysql://localhost:13306/pinpoint
 jdbc.username=admin
 jdbc.password=admin
 ```
@@ -265,7 +265,7 @@ In order to persist user alarm settings, set the mysql connection information in
 
 ```
 jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:13306/pinpoint?characterEncoding=UTF-8
+jdbc.url=jdbc:mysql://localhost:13306/pinpoint
 jdbc.username=admin
 jdbc.password=admin
 ```
@@ -779,7 +779,7 @@ mysql 접근을 위해서 pinpoint-batch의 [jdbc-root.properties](https://githu
 
 ```properties
 jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:13306/pinpoint?characterEncoding=UTF-8
+jdbc.url=jdbc:mysql://localhost:13306/pinpoint
 jdbc.username=admin
 jdbc.password=admin
 ```
@@ -809,7 +809,7 @@ ex) java -Dspring.profiles.active=local -jar pinpoint-batch-2.1.1.jar
 
 ```
 jdbc.driverClassName=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:13306/pinpoint?characterEncoding=UTF-8
+jdbc.url=jdbc:mysql://localhost:13306/pinpoint
 jdbc.username=admin
 jdbc.password=admin
 ```

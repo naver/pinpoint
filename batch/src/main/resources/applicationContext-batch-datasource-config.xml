@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd">
+
+    <util:properties id="driverProperties" location="classpath:mysql-driver.properties"/>
+
+    <bean id="abstractHikariConfig" class="com.zaxxer.hikari.HikariConfig" abstract="true">
+        <property name="dataSourceProperties" ref="driverProperties"/>
+
+        <property name="connectionTimeout" value="5000"/>
+        <!-- disable checkFailFast -->
+        <property name="initializationFailTimeout" value="-1"/>
+
+        <property name="maxLifetime" value="1200000"/>
+
+        <property name="maximumPoolSize" value="30"/>
+        <property name="minimumIdle" value="30"/>
+    </bean>
+
+    <bean id="dataSourceHikariConfig" class="com.zaxxer.hikari.HikariConfig" parent="abstractHikariConfig">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <property name="poolName" value="HikariPool-dataSource"/>
+    </bean>
+
+    <bean id="metaDataSourceHikariConfig" class="com.zaxxer.hikari.HikariConfig" parent="abstractHikariConfig">
+        <property name="driverClassName" value="${meta.jdbc.driverClassName}"/>
+        <property name="jdbcUrl" value="${meta.jdbc.url}"/>
+        <property name="username" value="${meta.jdbc.username}"/>
+        <property name="password" value="${meta.jdbc.password}"/>
+
+        <property name="poolName" value="HikariPool-meta"/>
+    </bean>
+
+</beans>

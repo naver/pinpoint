@@ -3,57 +3,15 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!-- DataSource Configuration -->
-    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="${jdbc.driverClassName}"/>
-        <property name="url" value="${jdbc.url}"/>
-        <property name="username" value="${jdbc.username}"/>
-        <property name="password" value="${jdbc.password}"/>
+    <import resource="applicationContext-web-datasource-config.xml"/>
 
-        <property name="initialSize" value="30"/>
-        <property name="maxTotal" value="30"/>
-        <property name="maxIdle" value="30"/>
-        <property name="minIdle" value="30"/>
-        <property name="maxWaitMillis" value="3000"/>
-
-        <property name="testOnBorrow" value="false"/>
-        <property name="testOnReturn" value="false"/>
-        <property name="testWhileIdle" value="true"/>
-
-        <property name="timeBetweenEvictionRunsMillis" value="30000"/>
-        <property name="numTestsPerEvictionRun" value="6"/>
-        <property name="minEvictableIdleTimeMillis" value="-1"/>
-        <property name="validationQuery" value="SELECT 1"/>
-
-        <!-- use cache or not for preparedStatement-->
-        <property name="poolPreparedStatements" value="true"/>
-        <property name="maxOpenPreparedStatements" value="50"/>
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <constructor-arg ref="dataSourceHikariConfig"/>
     </bean>
 
-    <bean id="metaDataDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="${jdbc.driverClassName}"/>
-        <property name="url" value="${jdbc.url}"/>
-        <property name="username" value="${jdbc.username}"/>
-        <property name="password" value="${jdbc.password}"/>
 
-        <property name="initialSize" value="30"/>
-        <property name="maxTotal" value="30"/>
-        <property name="maxIdle" value="30"/>
-        <property name="minIdle" value="30"/>
-        <property name="maxWaitMillis" value="3000"/>
-
-        <property name="testOnBorrow" value="false"/>
-        <property name="testOnReturn" value="false"/>
-        <property name="testWhileIdle" value="true"/>
-
-        <property name="timeBetweenEvictionRunsMillis" value="30000"/>
-        <property name="numTestsPerEvictionRun" value="6"/>
-        <property name="minEvictableIdleTimeMillis" value="-1"/>
-        <property name="validationQuery" value="SELECT 1"/>
-
-        <!-- use cache or not for preparedStatement-->
-        <property name="poolPreparedStatements" value="true"/>
-        <property name="maxOpenPreparedStatements" value="50"/>
+    <bean id="metaDataDataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <constructor-arg ref="metaDataSourceHikariConfig"/>
     </bean>
 
 </beans>
