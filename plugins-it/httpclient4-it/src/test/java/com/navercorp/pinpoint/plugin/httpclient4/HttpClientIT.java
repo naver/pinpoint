@@ -98,7 +98,7 @@ public class HttpClientIT {
         verifier.verifyTrace(event("HTTP_CLIENT_4_INTERNAL", AbstractHttpClient.class.getMethod("execute", HttpUriRequest.class, ResponseHandler.class)));
         final String hostname = webServer.getHostAndPort();
         verifier.verifyTrace(event("HTTP_CLIENT_4_INTERNAL", connectorClass.getMethod("open", HttpRoute.class, HttpContext.class, HttpParams.class), annotation("http.internal.display", hostname)));
-        verifier.verifyTrace(event("HTTP_CLIENT_4", HttpRequestExecutor.class.getMethod("execute", HttpRequest.class, HttpClientConnection.class, HttpContext.class), null, null, hostname, annotation("http.url", "/"), annotation("http.status.code", 200), annotation("http.io", anyAnnotationValue())));
+        verifier.verifyTrace(event("HTTP_CLIENT_4", HttpRequestExecutor.class.getMethod("execute", HttpRequest.class, HttpClientConnection.class, HttpContext.class), null, null, hostname, annotation("http.url", "/"),  annotation("http.status.code", 200), annotation("http.resp.header", anyAnnotationValue()), annotation("http.io", anyAnnotationValue())));
         verifier.verifyTraceCount(0);
     }
 }

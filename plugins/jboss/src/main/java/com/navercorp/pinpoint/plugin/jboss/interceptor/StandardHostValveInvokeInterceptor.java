@@ -29,8 +29,11 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.ServerHeaderRecorder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ServletRequestListener;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ServletRequestListenerBuilder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.ParameterRecorder;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServletResponseListener;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServletResponseListenerBuilder;
 import com.navercorp.pinpoint.plugin.common.servlet.util.ArgumentValidator;
 import com.navercorp.pinpoint.plugin.common.servlet.util.HttpServletRequestAdaptor;
+import com.navercorp.pinpoint.plugin.common.servlet.util.HttpServletResponseAdaptor;
 import com.navercorp.pinpoint.plugin.common.servlet.util.ParameterRecorderFactory;
 import com.navercorp.pinpoint.plugin.common.servlet.util.ServletArgumentValidator;
 import com.navercorp.pinpoint.plugin.jboss.JbossConfig;
@@ -58,6 +61,7 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
     private final MethodDescriptor methodDescriptor;
     private final ArgumentValidator argumentValidator;
     private final ServletRequestListener<HttpServletRequest> servletRequestListener;
+    private final ServletResponseListener<HttpServletResponse> servletResponseListener;
     private final ServletApiHelper servletApiHelper;
 
     /**
@@ -84,6 +88,8 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
         builder.setServerHeaderRecorder(profilerConfig.readList(ServerHeaderRecorder.CONFIG_KEY_RECORD_REQ_HEADERS));
         builder.setServerCookieRecorder(profilerConfig.readList(ServerCookieRecorder.CONFIG_KEY_RECORD_REQ_COOKIES));
         this.servletRequestListener = builder.build();
+
+        this.servletResponseListener = new ServletResponseListenerBuilder<HttpServletResponse>(traceContext, new HttpServletResponseAdaptor()).build();
 
         this.servletApiHelper = newServletApi();
     }
@@ -116,6 +122,8 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
                 return;
             }
             this.servletRequestListener.initialized(request, JbossConstants.JBOSS_METHOD, this.methodDescriptor);
+            final HttpServletResponse response = (HttpServletResponse) args[1];
+            this.servletResponseListener.initialized(response, JbossConstants.JBOSS_METHOD, this.methodDescriptor); //must after request listener due to trace block begin
         } catch (Throwable t) {
             if (isInfo) {
                 logger.info("Failed to servlet request event handle.", t);
@@ -144,7 +152,8 @@ public class StandardHostValveInvokeInterceptor implements AroundInterceptor {
                 return;
             }
             final int statusCode = servletApiHelper.getStatus(response);
-            this.servletRequestListener.destroyed(request, throwable, statusCode);
+            this.servletResponseListener.destroyed(response, throwable, statusCode); //must before request listener due to trace block ending
+            this.servletRequestListener.destroyed(request, throwable, statusCode, false);
         } catch (Throwable t) {
             if (isInfo) {
                 logger.info("Failed to servlet request event handle.", t);

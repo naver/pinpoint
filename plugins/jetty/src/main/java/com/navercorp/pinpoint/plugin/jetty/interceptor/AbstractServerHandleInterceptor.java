@@ -28,7 +28,10 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.ServerHeaderRecorder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ServletRequestListener;
 import com.navercorp.pinpoint.bootstrap.plugin.request.ServletRequestListenerBuilder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.ParameterRecorder;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServletResponseListener;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServletResponseListenerBuilder;
 import com.navercorp.pinpoint.plugin.common.servlet.util.HttpServletRequestAdaptor;
+import com.navercorp.pinpoint.plugin.common.servlet.util.HttpServletResponseAdaptor;
 import com.navercorp.pinpoint.plugin.common.servlet.util.ParameterRecorderFactory;
 import com.navercorp.pinpoint.plugin.jetty.JettyConfiguration;
 import com.navercorp.pinpoint.plugin.jetty.JettyConstants;
@@ -49,6 +52,7 @@ public abstract class AbstractServerHandleInterceptor implements AroundIntercept
 
     private final MethodDescriptor methodDescriptor;
     private final ServletRequestListener<HttpServletRequest> servletRequestListener;
+    private final ServletResponseListener<HttpServletResponse> servletResponseListener;
 
     public AbstractServerHandleInterceptor(TraceContext traceContext, MethodDescriptor descriptor, RequestRecorderFactory<HttpServletRequest> requestRecorderFactory) {
 
@@ -68,6 +72,8 @@ public abstract class AbstractServerHandleInterceptor implements AroundIntercept
         builder.setServerHeaderRecorder(profilerConfig.readList(ServerHeaderRecorder.CONFIG_KEY_RECORD_REQ_HEADERS));
         builder.setServerCookieRecorder(profilerConfig.readList(ServerCookieRecorder.CONFIG_KEY_RECORD_REQ_COOKIES));
         this.servletRequestListener = builder.build();
+
+        this.servletResponseListener = new ServletResponseListenerBuilder<HttpServletResponse>(traceContext, new HttpServletResponseAdaptor()).build();
     }
 
     abstract HttpServletRequest toHttpServletRequest(Object[] args);
@@ -89,6 +95,8 @@ public abstract class AbstractServerHandleInterceptor implements AroundIntercept
                 return;
             }
             this.servletRequestListener.initialized(request, JettyConstants.JETTY_METHOD, this.methodDescriptor);
+            final HttpServletResponse response = toHttpServletResponse(args);
+            this.servletResponseListener.initialized(response, JettyConstants.JETTY_METHOD, this.methodDescriptor); //must after request listener due to trace block begin
         } catch (Throwable t) {
             logger.info("Failed to servlet request event handle.", t);
         }
@@ -110,7 +118,8 @@ public abstract class AbstractServerHandleInterceptor implements AroundIntercept
                 return;
             }
             final int statusCode = getStatusCode(response);
-            this.servletRequestListener.destroyed(request, throwable, statusCode);
+            this.servletResponseListener.destroyed(response, throwable, statusCode); //must before request listener due to trace block ending
+            this.servletRequestListener.destroyed(request, throwable, statusCode, false);
         } catch (Throwable t) {
             if (isInfo) {
                 logger.info("Failed to servlet request event handle.", t);

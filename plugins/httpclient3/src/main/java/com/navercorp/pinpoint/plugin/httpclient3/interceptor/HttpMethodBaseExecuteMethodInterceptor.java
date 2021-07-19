@@ -30,10 +30,13 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.util.CookieRecorderFactor
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.EntityExtractor;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.EntityRecorder;
 import com.navercorp.pinpoint.bootstrap.plugin.request.util.EntityRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.util.ArrayUtils;
 import com.navercorp.pinpoint.common.util.IntBooleanIntBooleanValue;
 import com.navercorp.pinpoint.plugin.httpclient3.HttpClient3EntityExtractor;
 import com.navercorp.pinpoint.plugin.httpclient3.HttpClient3RequestWrapper;
+import com.navercorp.pinpoint.plugin.httpclient3.HttpClient3ResponseHeaderAdaptor;
 import com.navercorp.pinpoint.plugin.httpclient3.HttpMethodClientHeaderAdaptor;
 import com.navercorp.pinpoint.plugin.httpclient3.HttpClient3CookieExtractor;
 import org.apache.commons.httpclient.HttpConnection;
@@ -73,6 +76,7 @@ public class HttpMethodBaseExecuteMethodInterceptor implements AroundInterceptor
     private final boolean io;
     private final CookieRecorder<HttpMethod> cookieRecorder;
     private final EntityRecorder<HttpMethod> entityRecorder;
+    private final ServerResponseHeaderRecorder<HttpMethod> responseHeaderRecorder;
 
     public HttpMethodBaseExecuteMethodInterceptor(TraceContext traceContext, MethodDescriptor methodDescriptor, InterceptorScope interceptorScope) {
         if (traceContext == null) {
@@ -100,6 +104,8 @@ public class HttpMethodBaseExecuteMethodInterceptor implements AroundInterceptor
 
         EntityExtractor<HttpMethod> entityExtractor = HttpClient3EntityExtractor.INSTANCE;
         this.entityRecorder = EntityRecorderFactory.newEntityRecorder(httpDumpConfig, entityExtractor);
+
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<HttpMethod>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new HttpClient3ResponseHeaderAdaptor());
 
         ClientHeaderAdaptor<HttpMethod> clientHeaderAdaptor = new HttpMethodClientHeaderAdaptor();
         this.requestTraceWriter = new DefaultRequestTraceWriter<HttpMethod>(clientHeaderAdaptor, traceContext);
@@ -193,6 +199,7 @@ public class HttpMethodBaseExecuteMethodInterceptor implements AroundInterceptor
                 this.clientRequestRecorder.record(recorder, requestWrapper, throwable);
                 this.cookieRecorder.record(recorder, httpMethod, throwable);
                 this.entityRecorder.record(recorder, httpMethod, throwable);
+                this.responseHeaderRecorder.recordHeader(recorder, httpMethod);
             }
 
             if (result != null) {

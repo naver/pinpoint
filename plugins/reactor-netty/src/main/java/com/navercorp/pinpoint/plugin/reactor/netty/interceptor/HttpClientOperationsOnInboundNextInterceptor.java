@@ -22,9 +22,12 @@ import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
 import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.AsyncContextSpanEventSimpleAroundInterceptor;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.util.ArrayUtils;
 import com.navercorp.pinpoint.plugin.reactor.netty.ReactorNettyConstants;
+import com.navercorp.pinpoint.plugin.reactor.netty.ReactorNettyResponseHeaderAdaptor;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -32,8 +35,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * @author jaehong.kim
  */
 public class HttpClientOperationsOnInboundNextInterceptor extends AsyncContextSpanEventSimpleAroundInterceptor {
+
+    private final ServerResponseHeaderRecorder<HttpResponse> responseHeaderRecorder;
+
     public HttpClientOperationsOnInboundNextInterceptor(TraceContext traceContext, MethodDescriptor methodDescriptor) {
         super(traceContext, methodDescriptor);
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<HttpResponse>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new ReactorNettyResponseHeaderAdaptor());
     }
 
     // BEFORE
@@ -57,6 +64,7 @@ public class HttpClientOperationsOnInboundNextInterceptor extends AsyncContextSp
             if (httpResponseStatus != null) {
                 recorder.recordAttribute(AnnotationKey.HTTP_STATUS_CODE, httpResponseStatus.code());
             }
+            this.responseHeaderRecorder.recordHeader(recorder, httpResponses);
         } catch (Exception ignored) {
         }
     }

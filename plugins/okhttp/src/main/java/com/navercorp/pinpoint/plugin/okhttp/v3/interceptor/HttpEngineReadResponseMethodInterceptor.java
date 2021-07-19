@@ -23,8 +23,11 @@ import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.AroundInterceptor;
 import com.navercorp.pinpoint.bootstrap.logging.PLogger;
 import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.plugin.okhttp.OkHttpConstants;
+import com.navercorp.pinpoint.plugin.okhttp.v3.OkHttpResponseAdaptor;
 import com.navercorp.pinpoint.plugin.okhttp.v3.UserRequestGetter;
 import com.navercorp.pinpoint.plugin.okhttp.v3.UserResponseGetter;
 import okhttp3.Response;
@@ -39,11 +42,13 @@ public class HttpEngineReadResponseMethodInterceptor implements AroundIntercepto
     private final TraceContext traceContext;
     private final MethodDescriptor methodDescriptor;
     private final boolean statusCode;
+    private final ServerResponseHeaderRecorder<Response> responseHeaderRecorder;
 
     public HttpEngineReadResponseMethodInterceptor(TraceContext traceContext, MethodDescriptor methodDescriptor, boolean statusCode) {
         this.traceContext = traceContext;
         this.methodDescriptor = methodDescriptor;
         this.statusCode = statusCode;
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<Response>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new OkHttpResponseAdaptor());
     }
 
     @Override
@@ -108,6 +113,7 @@ public class HttpEngineReadResponseMethodInterceptor implements AroundIntercepto
                 final Response response = ((UserResponseGetter) target)._$PINPOINT$_getUserResponse();
                 if (response != null) {
                     recorder.recordAttribute(AnnotationKey.HTTP_STATUS_CODE, response.code());
+                    this.responseHeaderRecorder.recordHeader(recorder, response);
                 }
             }
         } finally {

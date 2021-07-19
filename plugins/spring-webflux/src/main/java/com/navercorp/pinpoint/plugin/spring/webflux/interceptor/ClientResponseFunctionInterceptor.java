@@ -20,9 +20,12 @@ import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
 import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.SpanEventSimpleAroundInterceptorForPlugin;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.plugin.spring.webflux.SpringWebFluxConstants;
 
+import com.navercorp.pinpoint.plugin.spring.webflux.SpringWebFluxResponseHeaderAdaptor;
 import org.springframework.http.client.reactive.ClientHttpResponse;
 
 /**
@@ -30,8 +33,11 @@ import org.springframework.http.client.reactive.ClientHttpResponse;
  */
 public class ClientResponseFunctionInterceptor extends SpanEventSimpleAroundInterceptorForPlugin {
 
+    private final ServerResponseHeaderRecorder<ClientHttpResponse> responseHeaderRecorder;
+
     public ClientResponseFunctionInterceptor(TraceContext traceContext, MethodDescriptor descriptor) {
         super(traceContext, descriptor);
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<ClientHttpResponse>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new SpringWebFluxResponseHeaderAdaptor());
     }
 
     @Override
@@ -47,6 +53,7 @@ public class ClientResponseFunctionInterceptor extends SpanEventSimpleAroundInte
         if (args[0] instanceof ClientHttpResponse) {
             ClientHttpResponse response = (ClientHttpResponse) args[0];
             recorder.recordAttribute(AnnotationKey.HTTP_STATUS_CODE, response.getRawStatusCode());
+            this.responseHeaderRecorder.recordHeader(recorder, response);
         }
     }
 }

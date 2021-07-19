@@ -20,7 +20,7 @@ import com.navercorp.pinpoint.common.annotations.InterfaceStability;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 
-public interface SpanEventRecorder extends FrameAttachment {
+public interface SpanEventRecorder extends AttributeRecorder, FrameAttachment {
 
     void recordTime(boolean time);
 
@@ -45,12 +45,6 @@ public interface SpanEventRecorder extends FrameAttachment {
     void recordSqlParsingResult(ParsingResult parsingResult);
 
     void recordSqlParsingResult(ParsingResult parsingResult, String bindValue);
-
-    void recordAttribute(AnnotationKey key, String value);
-
-    void recordAttribute(AnnotationKey key, int value);
-
-    void recordAttribute(AnnotationKey key, Object value);
 
     void recordServiceType(ServiceType serviceType);
 

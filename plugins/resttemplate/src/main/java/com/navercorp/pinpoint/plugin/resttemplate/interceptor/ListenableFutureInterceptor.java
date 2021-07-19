@@ -21,11 +21,15 @@ import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
 import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.AsyncContextSpanEventSimpleAroundInterceptor;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.plugin.resttemplate.RestTemplateConstants;
+import com.navercorp.pinpoint.plugin.resttemplate.RestTemplateResponseHeaderAdaptor;
 import com.navercorp.pinpoint.plugin.resttemplate.field.accessor.TraceFutureFlagAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.AbstractClientHttpResponse;
+import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 
@@ -34,8 +38,11 @@ import java.io.IOException;
  */
 public class ListenableFutureInterceptor extends AsyncContextSpanEventSimpleAroundInterceptor {
 
+    private final ServerResponseHeaderRecorder<ClientHttpResponse> responseHeaderRecorder;
+
     public ListenableFutureInterceptor(MethodDescriptor methodDescriptor, TraceContext traceContext) {
         super(traceContext, methodDescriptor);
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<ClientHttpResponse>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new RestTemplateResponseHeaderAdaptor());
     }
 
     @Override
@@ -86,6 +93,7 @@ public class ListenableFutureInterceptor extends AsyncContextSpanEventSimpleArou
                 if (statusCode != null) {
                     recorder.recordAttribute(AnnotationKey.HTTP_STATUS_CODE, statusCode.value());
                 }
+                this.responseHeaderRecorder.recordHeader(recorder, response);
             } catch (IOException ioException) {
                 logger.warn("Failed to after process. {}", ioException.getMessage(), ioException);
             }

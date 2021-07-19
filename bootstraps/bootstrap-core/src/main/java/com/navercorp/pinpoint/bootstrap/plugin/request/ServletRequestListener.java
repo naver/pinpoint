@@ -135,7 +135,17 @@ public class ServletRequestListener<REQ> {
         return trace;
     }
 
+    /**
+     * kept for bc, since response listener for weblogic & websphere has not been implemented yet.
+     * @param request request
+     * @param throwable error
+     * @param statusCode status code
+     */
     public void destroyed(REQ request, final Throwable throwable, final int statusCode) {
+        destroyed(request, throwable, statusCode, true);
+    }
+
+    public void destroyed(REQ request, final Throwable throwable, final int statusCode, final boolean recordStatusCode) {
         if (isDebug) {
             logger.debug("Destroyed requestEvent. request={}, throwable={}, statusCode={}", request, throwable, statusCode);
         }
@@ -159,7 +169,9 @@ public class ServletRequestListener<REQ> {
         try {
             final SpanEventRecorder recorder = trace.currentSpanEventRecorder();
             recorder.recordException(throwable);
-            this.httpStatusCodeRecorder.record(trace.getSpanRecorder(), statusCode);
+            if (recordStatusCode) {
+                this.httpStatusCodeRecorder.record(trace.getSpanRecorder(), statusCode);
+            }
             // Must be executed in destroyed()
             this.parameterRecorder.record(recorder, request, throwable);
         } finally {

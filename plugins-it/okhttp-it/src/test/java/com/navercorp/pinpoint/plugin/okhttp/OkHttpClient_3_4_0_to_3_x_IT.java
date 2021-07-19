@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.navercorp.pinpoint.bootstrap.plugin.test.Expectations.annotation;
+import static com.navercorp.pinpoint.bootstrap.plugin.test.Expectations.anyAnnotationValue;
 import static com.navercorp.pinpoint.bootstrap.plugin.test.Expectations.event;
 import static com.navercorp.pinpoint.common.trace.ServiceType.ASYNC;
 import static com.navercorp.pinpoint.plugin.okhttp.OkHttpConstants.OK_HTTP_CLIENT;
@@ -87,7 +88,8 @@ public class OkHttpClient_3_4_0_to_3_x_IT {
         verifier.verifyTrace(event(OK_HTTP_CLIENT.getName(), interceptMethod,
                 null, null, webServer.getHostAndPort(),
                 annotation("http.url", request.url().toString()),
-                annotation("http.status.code", response.code())));
+                annotation("http.status.code", response.code()),
+                annotation("http.resp.header", anyAnnotationValue())));
 
         String hostAndPort = HostAndPort.toHostAndPortString(request.url().host(), request.url().port());
         Method connectMethod = getConnectMethod(Class.forName("okhttp3.internal.connection.RealConnection"));
@@ -137,7 +139,8 @@ public class OkHttpClient_3_4_0_to_3_x_IT {
         verifier.verifyTrace(event(OK_HTTP_CLIENT.getName(), interceptMethod,
                 null, null, webServer.getHostAndPort(),
                 annotation("http.url", request.url().toString()),
-                annotation("http.status.code", response.code())));
+                annotation("http.status.code", response.code()),
+                annotation("http.resp.header", anyAnnotationValue())));
 
         String hostAndPort = HostAndPort.toHostAndPortString(request.url().host(), request.url().port());
         Method connectMethod = getConnectMethod(Class.forName("okhttp3.internal.connection.RealConnection"));

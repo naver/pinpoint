@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 NAVER Corp.
+ * Copyright 2021 NAVER Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,25 @@ import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
 import com.navercorp.pinpoint.bootstrap.context.SpanEventRecorder;
 import com.navercorp.pinpoint.bootstrap.context.TraceContext;
 import com.navercorp.pinpoint.bootstrap.interceptor.SpanEventSimpleAroundInterceptorForPlugin;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ResponseHeaderRecorderFactory;
+import com.navercorp.pinpoint.bootstrap.plugin.response.ServerResponseHeaderRecorder;
 import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.plugin.resttemplate.RestTemplateConstants;
-
+import com.navercorp.pinpoint.plugin.resttemplate.RestTemplateResponseHeaderAdaptor;
 import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 
 /**
- * @author Taejin Koo
+ * @author yjqg6666
  */
-public class HttpRequestInterceptor extends SpanEventSimpleAroundInterceptorForPlugin {
+public class ClientHttpResponseInterceptor extends SpanEventSimpleAroundInterceptorForPlugin {
 
-    public HttpRequestInterceptor(TraceContext traceContext, MethodDescriptor descriptor) {
+    private final ServerResponseHeaderRecorder<ClientHttpResponse> responseHeaderRecorder;
+
+    public ClientHttpResponseInterceptor(TraceContext traceContext, MethodDescriptor descriptor) {
         super(traceContext, descriptor);
+        this.responseHeaderRecorder = ResponseHeaderRecorderFactory.<ClientHttpResponse>newResponseHeaderRecorder(traceContext.getProfilerConfig(), new RestTemplateResponseHeaderAdaptor());
     }
 
     @Override
@@ -46,9 +51,10 @@ public class HttpRequestInterceptor extends SpanEventSimpleAroundInterceptorForP
         recorder.recordApi(methodDescriptor);
         recorder.recordException(throwable);
 
-        if (result instanceof ClientHttpResponse) {
-            ClientHttpResponse clientHttpResponse = (ClientHttpResponse) result;
+        if (target instanceof ClientHttpResponse) {
+            ClientHttpResponse clientHttpResponse = (ClientHttpResponse) target;
             recorder.recordAttribute(AnnotationKey.HTTP_STATUS_CODE, clientHttpResponse.getRawStatusCode());
+            this.responseHeaderRecorder.recordHeader(recorder, clientHttpResponse);
         }
     }
 

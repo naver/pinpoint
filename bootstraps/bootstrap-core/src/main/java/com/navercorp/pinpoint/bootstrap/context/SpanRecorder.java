@@ -1,10 +1,9 @@
 package com.navercorp.pinpoint.bootstrap.context;
 
-import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.trace.LoggingInfo;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 
-public interface SpanRecorder extends FrameAttachment {
+public interface SpanRecorder extends FrameAttachment, AttributeRecorder {
 
     boolean canSampled();
 
@@ -31,12 +30,6 @@ public interface SpanRecorder extends FrameAttachment {
     void recordApi(MethodDescriptor methodDescriptor, Object[] args, int start, int end);
 
     void recordApiCachedString(MethodDescriptor methodDescriptor, String args, int index);
-
-    void recordAttribute(AnnotationKey key, String value);
-
-    void recordAttribute(AnnotationKey key, int value);
-
-    void recordAttribute(AnnotationKey key, Object value);
 
     void recordServiceType(ServiceType serviceType);
 
