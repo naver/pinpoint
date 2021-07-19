@@ -20,6 +20,8 @@ import com.navercorp.pinpoint.bootstrap.plugin.request.RequestAdaptor;
 import com.navercorp.pinpoint.bootstrap.util.NetworkUtils;
 import weblogic.servlet.internal.ServletRequestImpl;
 
+import java.util.Collection;
+
 /**
  * @author jaehong.kim
  */
@@ -27,6 +29,13 @@ public class ServletRequestImplAdaptor implements RequestAdaptor<ServletRequestI
     @Override
     public String getHeader(ServletRequestImpl request, String name) {
         return request.getHeader(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(ServletRequestImpl request) {
+        //todo to be replaced with Weblogic ServletRequestImpl request
+        //throw new UnsupportedOperationException("not implemented yet!");
+        return null;
     }
 
     @Override

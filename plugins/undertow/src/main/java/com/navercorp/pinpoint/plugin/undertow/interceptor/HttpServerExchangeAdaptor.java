@@ -21,9 +21,15 @@ import com.navercorp.pinpoint.bootstrap.plugin.util.SocketAddressUtils;
 import com.navercorp.pinpoint.bootstrap.util.NetworkUtils;
 import com.navercorp.pinpoint.common.plugin.util.HostAndPort;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
+import io.undertow.util.HttpString;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author jaehong.kim
@@ -32,11 +38,32 @@ public class HttpServerExchangeAdaptor implements RequestAdaptor<HttpServerExcha
 
     @Override
     public String getHeader(HttpServerExchange request, String name) {
-        final HeaderValues values = request.getRequestHeaders().get(name);
+        final HeaderMap requestHeaders = request.getRequestHeaders();
+        if (requestHeaders == null) {
+            return null;
+        }
+        final HeaderValues values = requestHeaders.get(name);
         if (values != null) {
             return values.peekFirst();
         }
         return null;
+    }
+
+    @Override
+    public Collection<String> getHeaderNames(HttpServerExchange request) {
+        final HeaderMap requestHeaders = request.getRequestHeaders();
+        if (requestHeaders == null) {
+            return Collections.emptySet();
+        }
+        final Collection<HttpString> headerNames = requestHeaders.getHeaderNames();
+        if (headerNames == null) {
+            return Collections.emptySet();
+        }
+        Set<String> values = new HashSet<>(headerNames.size());
+        for (HttpString headerName : headerNames) {
+            values.add(headerName.toString());
+        }
+        return values;
     }
 
     @Override
